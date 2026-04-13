@@ -1,0 +1,35 @@
+seed: 42
+output:
+  root_dir: results
+
+data:
+  seq_len: 100
+
+multiclass_data:
+  train:
+    ur2: 50000
+    ur1: 50000
+    ur0: 50000
+  val:
+    ur2: 10000
+    ur1: 10000
+    ur0: 10000
+  test:
+    ur2: 10000
+    ur1: 10000
+    ur0: 10000
+
+model:
+  hidden_size: 30
+  num_layers: 1
+
+training:
+  batch_size: 1000
+  max_epochs: 200
+  early_stopping_patience: 10
+  lr: 0.001
+  use_cuda: false
+
+adf:
+  regression: n
+  alphas: [0.01, 0.05, 0.10]
