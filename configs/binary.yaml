@@ -1,0 +1,37 @@
+seed: 42
+output:
+  root_dir: results
+
+data:
+  seq_len: 100
+  train:
+    stationary: 50000
+    ur1: 25000
+    ur2: 25000
+  val:
+    stationary: 15000
+    ur1: 7500
+    ur2: 7500
+  test:
+    stationary: 5000
+    ur1: 2500
+    ur2: 2500
+
+model:
+  hidden_size: 30
+  num_layers: 1
+
+training:
+  batch_size: 1000
+  max_epochs: 200
+  early_stopping_patience: 10
+  lr: 0.001
+  use_cuda: false
+
+adf:
+  regression: n
+  alphas: [0.01, 0.05, 0.10]
+
+non_theoretical:
+  total: 10000
+  p_values: [0.15, 0.30, 0.45, 0.60, 0.75, 0.90]
