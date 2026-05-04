@@ -1,6 +1,8 @@
 import json
 import random
+from contextlib import contextmanager
 from pathlib import Path
+from time import perf_counter
 
 import numpy as np
 import torch
@@ -31,3 +33,18 @@ def save_json(data, path: Path) -> None:
 
 def config_to_jsonable(cfg):
     return json.loads(json.dumps(cfg))
+
+
+@contextmanager
+def timed_block(timing: dict, name: str, use_cuda_sync: bool = False):
+    if use_cuda_sync and torch.cuda.is_available():
+        torch.cuda.synchronize()
+    start = perf_counter()
+    try:
+        yield
+    finally:
+        if use_cuda_sync and torch.cuda.is_available():
+            torch.cuda.synchronize()
+        elapsed_sec = perf_counter() - start
+        timing[f"{name}_sec"] = float(elapsed_sec)
+        timing[f"{name}_min"] = float(elapsed_sec / 60.0)
