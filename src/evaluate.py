@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .adf_utils import evaluate_adf_binary, evaluate_adf_multiclass
-from .utils import save_json
+from .utils import save_json, timed_block
 
 
 def predict_model(model, ds, batch_size=1000, device="cpu"):
@@ -43,35 +43,51 @@ def multiclass_metrics(y_true, y_pred, n_classes=3):
 
 
 def evaluate_binary_pipeline(model, test_ds, test_x, test_y, alphas, run_dir: Path, device="cpu"):
-    y_pred, y_true = predict_model(model, test_ds, device=device)
-    lstm = binary_metrics(y_true, y_pred)
-    adf = evaluate_adf_binary(test_x, test_y, alphas=alphas, regression="n")
-    out = {"lstm": lstm, "adf": adf}
+    timing = {}
+    use_cuda_sync = str(device).startswith("cuda")
+    with timed_block(timing, "evaluation_total", use_cuda_sync=use_cuda_sync):
+        with timed_block(timing, "lstm_test", use_cuda_sync=use_cuda_sync):
+            y_pred, y_true = predict_model(model, test_ds, device=device)
+        lstm = binary_metrics(y_true, y_pred)
+        with timed_block(timing, "adf_test", use_cuda_sync=False):
+            adf = evaluate_adf_binary(test_x, test_y, alphas=alphas, regression="n")
+    out = {"lstm": lstm, "adf": adf, "timing": timing}
     save_json(out, Path(run_dir) / "evaluation_binary.json")
     return out
 
 
 def evaluate_multiclass_pipeline(model, test_ds, test_x, test_y, alphas, run_dir: Path, device="cpu"):
-    y_pred, y_true = predict_model(model, test_ds, device=device)
-    lstm = multiclass_metrics(y_true, y_pred)
-    adf = evaluate_adf_multiclass(test_x, test_y, alphas=alphas, regression="n")
-    out = {"lstm": lstm, "adf": adf}
+    timing = {}
+    use_cuda_sync = str(device).startswith("cuda")
+    with timed_block(timing, "evaluation_total", use_cuda_sync=use_cuda_sync):
+        with timed_block(timing, "lstm_test", use_cuda_sync=use_cuda_sync):
+            y_pred, y_true = predict_model(model, test_ds, device=device)
+        lstm = multiclass_metrics(y_true, y_pred)
+        with timed_block(timing, "adf_test", use_cuda_sync=False):
+            adf = evaluate_adf_multiclass(test_x, test_y, alphas=alphas, regression="n")
+    out = {"lstm": lstm, "adf": adf, "timing": timing}
     save_json(out, Path(run_dir) / "evaluation_multiclass.json")
     return out
 
 
 def evaluate_non_theoretical_table(model, datasets: Dict[str, Dict], alphas, device="cpu"):
     rows = []
+    use_cuda_sync = str(device).startswith("cuda")
     for p_key, pack in datasets.items():
+        timing = {}
         ds = pack["ds"]
         x, y = pack["x"], pack["y"]
-        pred, y_true = predict_model(model, ds, device=device)
-        lstm_acc = float((pred == y_true).mean())
-        adf = evaluate_adf_binary(x, y, alphas=alphas, regression="n")
+        with timed_block(timing, "total", use_cuda_sync=use_cuda_sync):
+            with timed_block(timing, "lstm_test", use_cuda_sync=use_cuda_sync):
+                pred, y_true = predict_model(model, ds, device=device)
+            lstm_acc = float((pred == y_true).mean())
+            with timed_block(timing, "adf_test", use_cuda_sync=False):
+                adf = evaluate_adf_binary(x, y, alphas=alphas, regression="n")
         rows.append({
             "p": p_key,
             "composition": pack["composition"],
             "lstm_accuracy": lstm_acc,
             "adf_accuracy": {k: v["accuracy"] for k, v in adf.items()},
+            "timing": timing,
         })
     return rows
