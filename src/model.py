@@ -19,3 +19,15 @@ class LSTMClassifier(nn.Module):
         _, (h_n, _) = self.lstm(x)
         last_hidden = h_n[-1]
         return self.fc(last_hidden)
+
+
+class ANNClassifier(nn.Module):
+    """One ReLU hidden layer; logits correspond to unit root, stationary."""
+
+    def __init__(self, input_size: int, hidden_size: int):
+        super().__init__()
+        self.hidden = nn.Linear(input_size, hidden_size)
+        self.output = nn.Linear(hidden_size, 2)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.output(torch.relu(self.hidden(x)))

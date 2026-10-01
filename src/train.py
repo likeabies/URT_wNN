@@ -48,7 +48,18 @@ def validate_one_epoch(model, loader, criterion, device="cpu"):
     return total_loss / total_n, total_correct / total_n
 
 
-def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: str = "cpu", wandb_run=None):
+def ann_weighted_cross_entropy(logits, targets, w1=1.0, w2=1.0):
+    """Paper WCE: -mean(w1*x*log(p) + w2*(1-x)*log(1-p)).
+
+    Paper x=1 means unit root, whereas our class index 0 means unit root.
+    Take the sample mean (1/N), never divide by the sum of class weights.
+    """
+    log_probs = torch.log_softmax(logits, dim=1)
+    weights = logits.new_tensor([w1, w2])
+    return -(weights[targets] * log_probs.gather(1, targets[:, None]).squeeze(1)).mean()
+
+
+def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: str = "cpu", wandb_run=None, criterion=None):
     total_start = perf_counter()
 
     run_dir = ensure_dir(run_dir)
@@ -59,11 +70,12 @@ def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: st
     patience = int(config["training"]["early_stopping_patience"])
     lr = float(config["training"].get("lr", 1e-3))
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=config["training"].get("shuffle", True))
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    if criterion is None:
+        criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=float(config["training"].get("weight_decay", 0.0)))
 
     model.to(device)
 

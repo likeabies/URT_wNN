@@ -1,0 +1,13 @@
+# 16 tiny runs: 2 data seeds x 2 model seeds x 2 designs x 2 w2 values.
+# Design names denote full-scale designs; smoke sizes are 144 and 240.
+base_configs:
+  50: configs/ann_smoke_50.yaml
+T_values: [50]
+w2_values: [0.5, 1.0]
+data_seeds: [42, 43]
+model_seeds: [7, 17]
+training_overrides:
+  max_epochs: 2
+  early_stopping_patience: 2
+output:
+  root_dir: results

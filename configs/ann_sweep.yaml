@@ -1,0 +1,11 @@
+# Inspect with --dry-run before launching. This grid contains 120 full-scale runs.
+base_configs:
+  50: configs/ann_50.yaml
+  100: configs/ann_100.yaml
+  250: configs/ann_250.yaml
+T_values: [50, 100, 250]
+w2_values: [0.1, 0.25, 0.5, 0.75, 1.0]
+data_seeds: [42, 43]
+model_seeds: [7, 17]
+output:
+  root_dir: results

@@ -9,6 +9,32 @@ from .adf_utils import evaluate_adf_binary, evaluate_adf_multiclass
 from .utils import save_json, timed_block
 
 
+def evaluate_ann(model, dataset, raw, criterion, batch_size=256, device="cpu"):
+    """Evaluate a single split, including every (rho, beta) rejection rate."""
+    model.eval()
+    predictions = []
+    loss_sum = 0.0
+    with torch.no_grad():
+        for xb, yb in DataLoader(dataset, batch_size=batch_size, shuffle=False):
+            logits = model(xb.to(device))
+            loss_sum += criterion(logits, yb.to(device)).item() * len(yb)
+            predictions.append(torch.softmax(logits, dim=1).argmax(dim=1).cpu().numpy())
+    predicted = np.concatenate(predictions)
+    overall = binary_metrics(raw["y"], predicted)
+    overall["loss"] = loss_sum / len(predicted)
+    overall["n"] = len(predicted)
+    by_parameter = []
+    for rho in np.unique(raw["rho"]):
+        for beta in np.unique(raw["beta"]):
+            mask = (raw["rho"] == rho) & (raw["beta"] == beta)
+            by_parameter.append({
+                "rho": float(rho), "beta": float(beta), "n": int(mask.sum()),
+                "rejection_rate": float((predicted[mask] == 1).mean()),
+                "interpretation": "type_i_error" if rho == 1 else "power",
+            })
+    return {"overall": overall, "by_parameter": by_parameter}
+
+
 def predict_model(model, ds, batch_size=1000, device="cpu"):
     loader = DataLoader(ds, batch_size=batch_size, shuffle=False)
     model.eval()

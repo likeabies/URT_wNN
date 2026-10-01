@@ -195,3 +195,45 @@ def make_non_theoretical_binary_testset(total: int, p_unit_root: float, length: 
 
 def make_tensordataset(data: Dict[str, np.ndarray]) -> TensorDataset:
     return _to_tensors(data["x"], data["y"])
+
+
+def normalize_ann_series(values: np.ndarray) -> np.ndarray:
+    """Center and scale each series independently; a constant series stays zero."""
+    centered = values - values.mean(axis=1, keepdims=True)
+    scale = np.max(np.abs(centered), axis=1, keepdims=True)
+    return np.divide(centered, scale, out=np.zeros_like(centered), where=scale != 0)
+
+
+def make_ann_dataset(length: int, rhos, betas, n_unit_root: int, n_stationary: int, seed: int):
+    """Counts are per (rho, beta). Return normalized inputs and aligned labels/parameters.
+
+    General model: Y_t = rho*Y_(t-1) + Z_t,
+    Z_t = alpha*Z_(t-1) + beta*e_(t-1) + e_t.
+    Simulation uses alpha=0, Y_0=0, and iid N(0,1) errors e_0,...,e_T.
+    Vectorize across samples, retaining the exact recurrence over time.
+    """
+    rng = np.random.default_rng(seed)
+    total = sum(n_unit_root if rho == 1 else n_stationary for rho in rhos) * len(betas)
+    x = np.empty((total, length), dtype=np.float32)
+    y = np.empty(total, dtype=np.int64)
+    rho_values = np.empty(total, dtype=np.float64)
+    beta_values = np.empty(total, dtype=np.float64)
+    offset = 0
+    for rho in rhos:
+        for beta in betas:
+            n = n_unit_root if rho == 1 else n_stationary
+            errors = rng.normal(size=(n, length + 1))
+            innovations = beta * errors[:, :-1] + errors[:, 1:]
+            values = np.empty((n, length), dtype=np.float64)
+            previous = np.zeros(n)
+            for t in range(length):
+                previous = rho * previous + innovations[:, t]
+                values[:, t] = previous
+            region = slice(offset, offset + n)
+            x[region] = normalize_ann_series(values)
+            y[region] = BINARY_LABELS["unit_root" if rho == 1 else "stationary"]
+            rho_values[region] = rho
+            beta_values[region] = beta
+            offset += n
+    order = rng.permutation(total)
+    return {"x": x[order], "y": y[order], "rho": rho_values[order], "beta": beta_values[order]}

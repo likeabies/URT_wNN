@@ -121,3 +121,118 @@ python -m scripts.run_multiclass --config configs/multiclass.yaml --run-name mul
 - AR(2) initialization uses zeros at `t<1` and `t<2`.
 - ADF lag selection uses `autolag='AIC'`.
 - Non-theoretical count splits use balanced integer allocation when exact equal division is impossible.
+
+## Feedforward ANN reproduction
+
+The ANN follows the supplied Ekanayake & Samaranayake (2019) specification.
+The general DGP is `Y_t = rho * Y_(t-1) + Z_t` and
+`Z_t = alpha * Z_(t-1) + beta * e_(t-1) + e_t`. Simulation sets `alpha=0`,
+so `Z_t = beta * e_(t-1) + e_t`. Each sample starts at `Y_0=0`, draws
+independent standard-normal errors `e_0,...,e_T`, and uses `Y_1,...,Y_T`.
+Generation is vectorized across samples. Each generated sample retains its
+`rho`, `beta`, and label: `0=unit root` for `rho=1`, `1=stationary` otherwise.
+All 12 beta values, including zero, are included.
+
+Each series is independently transformed to
+`X_t = (Y_t - mean(Y)) / max(abs(Y - mean(Y)))` (constant series become zeros).
+The model has one ReLU hidden layer, with 20 nodes for T=50 and 50 nodes for
+T=100/250, followed by two outputs. Evaluation uses softmax and argmax.
+
+The paper loss is
+`L = -(1/N) * sum(w1*x_i*log(p_i) + w2*(1-x_i)*log(1-p_i))`, where paper
+`x_i=1` means unit root and `p_i=P(unit root)`. Thus our class **0** receives
+`w1` and class **1** receives `w2`. The implementation uses log-softmax and
+divides by sample count, not by the sum of weights. Both weights default to 1
+and are configurable. Automatic weight calibration is not implemented.
+
+`configs/ann_50.yaml`, `ann_100.yaml`, and `ann_250.yaml` specify separate
+models with 120,000 training samples and 72,000 samples in each independent
+validation/test split. Validation and test are reproduction additions.
+Adam, learning rate 0.001, batch size 256, up to 100 epochs, patience 10,
+zero dropout/weight decay, and training shuffle are explicit reproduction
+choices in the configs. Device selection is automatic: CUDA, then MPS, then
+CPU. The selected device is printed, saved in `summary.json`, and logged to W&B.
+
+Small end-to-end checks (240 train / 144 validation / 144 test samples per T):
+
+```bash
+WANDB_MODE=offline python -m scripts.run_ann --config configs/ann_smoke_50.yaml --run-name smoke_ann_50
+WANDB_MODE=offline python -m scripts.run_ann --config configs/ann_smoke_100.yaml --run-name smoke_ann_100
+WANDB_MODE=offline python -m scripts.run_ann --config configs/ann_smoke_250.yaml --run-name smoke_ann_250
+```
+
+Full-scale command, to run separately when desired:
+
+```bash
+python -m scripts.run_ann --config configs/ann_50.yaml --run-name ann_50
+```
+
+Use the corresponding config for T=100 or T=250. W&B online runs require
+authentication; `WANDB_MODE=offline` records locally without cloud syncing.
+Each ANN run saves `config_snapshot.json`, `history.json`, `best_model.pt`,
+`evaluation_val.json`, `evaluation_test.json`, and `summary.json` in its result
+directory. Each evaluation contains overall metrics and all 72 `(rho, beta)`
+rejection rates, `P(predict stationary)`: Type I error at `rho=1`, power otherwise.
+W&B records the same evaluation metrics and per-epoch loss/accuracy.
+Early stopping uses validation loss only. Standalone runs generate test data
+after checkpoint selection; sweeps prepare a shared test set in advance but
+use it only for final evaluation. Test data are never used for weight selection.
+The existing LSTM entry points, configurations, and device behavior are unchanged.
+
+## ANN weight sweep
+
+`scripts/run_ann_sweep.py` runs a sequential grid using the existing ANN configs
+and training/evaluation pipeline. Edit only `configs/ann_sweep.yaml` to choose
+T values, the `w2` grid, data seeds, model seeds, and base configs. `w1` is fixed
+at 1. Each run is separately logged to the existing W&B project, grouped by
+the sweep prefix. There is no automatic weight selection or plotting.
+
+Data are generated once per `(T, data_seed)` and reused in memory across all
+weights and model seeds. NumPy SeedSequence derives independent train, base
+validation, test, and validation-extension streams from `(data_seed, T)`.
+`model_seed` controls initialization and training shuffle, and is reset for
+every run. It never determines data generation.
+
+- `val_72k`: 1,000 samples per `(rho, beta)` (12,000 unit root / 60,000 stationary).
+- `val_120k`: the complete `val_72k` set plus 4,000 extra unit-root samples per
+  beta (60,000 unit root / 60,000 stationary). Stationary samples and their
+  relative order are identical between designs. Test and training arrays are shared.
+- Smoke configs scale these to 144 and 240 validation samples, retaining all
+  72 cells and the same proportions.
+
+Run names/configs identify T, validation design, w2, data seed, and model seed.
+Config snapshots record the derived split seeds, base validation counts,
+`validation_extension` (additional unit-root count/seed), actual `sample_counts`,
+and SHA-256 fingerprints of inputs, labels, rho and beta. Summaries also record
+initial-model and pre-training RNG fingerprints. A sweep manifest under
+`results/<prefix>/sweep_manifest.json` records completed runs and W&B URLs.
+Existing result files are retained for each run under `results/<run-name>/`.
+Reusing an existing sweep prefix is rejected to prevent overwriting results.
+
+W&B logs `val.type_i_error`, `val.power`, `test.type_i_error`, and `test.power`
+alongside the existing overall and per-cell metrics. The local evaluation JSON
+uses the equivalent existing `empirical_size` and `empirical_power` fields.
+Power is the fraction of all stationary samples predicted stationary.
+
+Inspect the full grid without generating data or creating W&B runs:
+
+```bash
+.venv/bin/python -m scripts.run_ann_sweep --config configs/ann_sweep.yaml --dry-run
+```
+
+Tiny online verification sweep (16 runs, two epochs each):
+
+```bash
+WANDB_MODE=online .venv/bin/python -m scripts.run_ann_sweep --config configs/ann_sweep_smoke.yaml --run-prefix ann_sweep_smoke
+```
+
+Full-scale launch, only after reviewing and approving the configuration:
+
+```bash
+WANDB_MODE=online .venv/bin/python -m scripts.run_ann_sweep --config configs/ann_sweep.yaml --run-prefix ann_overnight_01
+```
+
+The proposed full grid has 120 runs (3 T values × 5 weights × 2 data seeds ×
+2 model seeds × 2 validation designs), each with the original full ANN training
+settings. Completion within one night has not been benchmarked. Keep the Mac
+awake during execution; choose a new prefix for a new sweep.

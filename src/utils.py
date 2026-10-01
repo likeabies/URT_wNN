@@ -16,6 +16,15 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+def select_device() -> str:
+    """Choose the first available accelerator for ANN experiments."""
+    if torch.cuda.is_available():
+        return "cuda"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 def load_config(path: str):
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
