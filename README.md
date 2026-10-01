@@ -86,9 +86,19 @@ Uses same LSTM backbone with `Linear(30,3)` head and reports:
 
 ## Install
 
+Use Python 3.12 and run these commands from the repository root. On the
+validated Apple Silicon Mac, Python 3.12.15 is installed via Homebrew.
+
 ```bash
-pip install -r requirements.txt
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pip check
 ```
+
+Activate `.venv` in each new terminal before running the commands below.
+The virtual environment and generated results are excluded from Git.
+The supplied configurations run on CPU, including on macOS.
 
 ## Smoke test (quick end-to-end)
 
