@@ -48,7 +48,7 @@ def validate_one_epoch(model, loader, criterion, device="cpu"):
     return total_loss / total_n, total_correct / total_n
 
 
-def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: str = "cpu"):
+def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: str = "cpu", wandb_run=None):
     total_start = perf_counter()
 
     run_dir = ensure_dir(run_dir)
@@ -116,6 +116,15 @@ def train_model(model, train_ds, val_ds, config: Dict, run_dir: Path, device: st
                 "epoch_time_sec": epoch_time,
             }
         )
+
+        if wandb_run is not None:
+            wandb_run.log({
+                "epoch": epoch,
+                "train_loss": tr_loss,
+                "train_acc": tr_acc,
+                "val_loss": va_loss,
+                "val_acc": va_acc,
+            })
 
         if va_loss < best_val:
             best_val = va_loss

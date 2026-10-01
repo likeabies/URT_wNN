@@ -1,5 +1,6 @@
 __pycache__/
 .venv/
+wandb/
 *.pyc
 results/*
 !results/.gitkeep
