@@ -6,6 +6,46 @@ Supplementary category: `validation_based_calibration_sensitivity`, containing t
 
 ## Current status and next step
 
+### Authorized fixed-200 calibration (2026-10-08)
+
+The separate `scripts/run_ann_fixed200_calibration.py` entry point now implements
+the user-decided 200-epoch calibration. Its configuration is
+`configs/ann_fixed200_w2_calibration.json`. It retains the original diagnostic
+code and historical stop below, but does not invoke convergence, sensitivity,
+polynomial, validation, ADF, or independent-test paths.
+
+All T use w2=[.20,.25,.30,.35,.40,.45,.50,.55] and seeds [7,17,27]: 72 new coarse
+fits. The existing primary data seed is inherited unchanged. A single 120,000
+sample dataset per T is generated and held in memory for both stages; its
+fingerprint and derived seed are recorded. Training remains Adam/.001/256,
+200 epochs, MPS, no dropout/weight decay/early stopping.
+
+After all coarse runs, select an adjacent interval bracketing mean training
+Type I error .05. Prefer a crossing containing the closest coarse point; break
+ties by smallest endpoint error, then summed endpoint error, then lower interval.
+Without a crossing, use the closest point and the adjacent point with smaller
+target error, staying inside [.20,.55]. Record the lack of bracketing and never
+expand the range. Generate five equally spaced values including endpoints,
+reuse the 18 existing endpoint results, and train 27 new interior results.
+No prior w2=1 or validation-sensitivity result is reused.
+
+Choose each `fine_grid_candidate` by smallest absolute mean training size error;
+lower w2 breaks exact ties. Candidates are provisional, not final. Save sample
+SDs, power, beta-specific size, and all three seeds' metrics. Output lives in
+`results/ann_paper2019_reproduction/w2_calibration/`, including
+`coarse_summary.csv`, `fine_summary.csv`, `calibration_candidates.json`,
+`run_manifest.json`, and explicit fine endpoint provenance. W&B group is
+`ann_paper2019_reproduction_w2_calibration`. Refuse existing output directories.
+Only genuine execution/data/checkpoint/nonfinite failures stop this path.
+
+Verify counts without generating data or training:
+`.venv/bin/python -m scripts.run_ann_fixed200_calibration --dry-run`.
+Launch with `WANDB_MODE=online nohup caffeinate -is .venv/bin/python -u -m scripts.run_ann_fixed200_calibration`.
+The expected total is 99 new fits. Runtime is estimated from completed 300-epoch
+diagnostic timing; do not reduce grids or repetitions to meet an estimate.
+
+### Historical gated workflow (preserved)
+
 The three T=100, w2=1 convergence trajectories (model seeds 7,17,27) completed
 checkpoints 50/100/150/200/300. Aggregate loss and accuracy are nearly plateaued
 by 200, but the documented per-seed rate-change gate rejected both 150 and 200.

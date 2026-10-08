@@ -1,0 +1,11 @@
+{
+  "base_config": "configs/ann_paper2019_reproduction.json",
+  "family": "ann_paper2019_reproduction_w2_calibration",
+  "output_dir": "results/ann_paper2019_reproduction/w2_calibration",
+  "epochs": 200,
+  "T_values": [50, 100, 250],
+  "model_seeds": [7, 17, 27],
+  "coarse_w2": [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55],
+  "fine_points": 5,
+  "target": 0.05
+}
