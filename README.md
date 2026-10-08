@@ -2,6 +2,14 @@
 
 ## ANN experiment families
 
+**Fixed-200 calibration:** the separately authorized training-only path is
+`scripts/run_ann_fixed200_calibration.py`, configured by
+`configs/ann_fixed200_w2_calibration.json`. It runs 72 coarse fits and automatically
+adds 27 fine fits, reusing endpoints. It bypasses the original convergence and
+polynomial gates without changing them, and stops at provisional training-based
+weight candidates; it does not generate validation or independent test data.
+See the fixed-200 section of the protocol below. Use `--dry-run` to check counts.
+
 The ANN work now has two distinct workflows; neither replaces the existing LSTM entry points.
 
 - **Supplementary — `validation_based_calibration_sensitivity`:**
@@ -19,8 +27,8 @@ The ANN work now has two distinct workflows; neither replaces the existing LSTM 
 
 The three primary convergence trajectories have completed. The conservative
 per-seed stability gate stopped the workflow before sensitivity and calibration.
-Fixed 200-epoch calibration is the proposed next step after review/merge, **not a
-completed result or an automatically approved change to the convergence gate**.
+The original diagnostic gate remains preserved. Fixed 200-epoch calibration is
+now separately authorized through the entry point above, **not a completed result**.
 GtS ADF remains pending. Results, W&B data, logs and checkpoints stay local and
 are excluded from this source-only repository change.
 
