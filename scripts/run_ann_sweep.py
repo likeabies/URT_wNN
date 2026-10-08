@@ -68,16 +68,25 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     sweep = load_config(args.config)
-    for key in ("T_values", "w2_values", "data_seeds", "model_seeds"):
+    for key in ("T_values", "data_seeds", "model_seeds"):
         values = sweep[key]
         if not values or len(set(values)) != len(values):
             raise ValueError(f"{key} must be nonempty and contain no duplicates")
-    if any(not math.isfinite(w) or w <= 0 for w in sweep["w2_values"]):
-        raise ValueError("w2 values must be finite and positive")
     if any(not isinstance(s, int) or s < 0 for s in sweep["data_seeds"] + sweep["model_seeds"]):
         raise ValueError("Seeds must be nonnegative integers")
 
     designs = ("val_72k", "val_120k")
+    if ("w2_values" in sweep) == ("w2_values_by_group" in sweep):
+        raise ValueError("Specify exactly one of w2_values or w2_values_by_group")
+    grids = {}
+    for length, design in product(sweep["T_values"], designs):
+        values = (sweep["w2_values_by_group"][length][design]
+                  if "w2_values_by_group" in sweep else sweep["w2_values"])
+        if not values or len(set(values)) != len(values):
+            raise ValueError(f"w2 grid for {length}/{design} must be nonempty and unique")
+        if any(not math.isfinite(w) or w <= 0 for w in values):
+            raise ValueError("w2 values must be finite and positive")
+        grids[length, design] = values
     bases = {}
     for length in sweep["T_values"]:
         base = load_config(sweep["base_configs"][length])
@@ -93,7 +102,12 @@ def main():
         base["output"]["root_dir"] = sweep["output"]["root_dir"]
         bases[length] = base
 
-    combinations = list(product(sweep["T_values"], sweep["data_seeds"], sweep["model_seeds"], designs, sweep["w2_values"]))
+    combinations = [
+        (length, data_seed, model_seed, design, w2)
+        for length, data_seed, model_seed, design in product(
+            sweep["T_values"], sweep["data_seeds"], sweep["model_seeds"], designs)
+        for w2 in grids[length, design]
+    ]
     prefix = args.run_prefix or f"ann_sweep_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
     if Path(prefix).name != prefix or prefix in (".", ".."):
         raise ValueError("run-prefix must be a directory-safe name")

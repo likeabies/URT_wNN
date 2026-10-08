@@ -1,5 +1,36 @@
 # Minimal Reproduction: LSTM Unit-Root Classification
 
+## ANN experiment families
+
+The ANN work now has two distinct workflows; neither replaces the existing LSTM entry points.
+
+- **Supplementary — `validation_based_calibration_sensitivity`:**
+  `configs/ann_valratio_1to5_vs_1to1_5x5.yaml` defines the completed 1,800-run
+  validation-ratio sweep; `configs/ann_valratio_fine_5x5.yaml` defines its completed
+  600-run fine sweep. `scripts/run_ann_sweep.py` accepts either a shared
+  `w2_values` grid or `w2_values_by_group` indexed by T and validation design.
+  These experiments use validation-based early stopping and weight selection.
+- **Primary — `ann_paper2019_reproduction`:**
+  `scripts/run_ann_paper2019.py` and `configs/ann_paper2019_reproduction.json`
+  define a separate fixed-epoch, training-only calibration workflow with no
+  validation set or validation early stopping. Read
+  [ANN_PAPER2019_PROTOCOL.md](ANN_PAPER2019_PROTOCOL.md) for assumptions,
+  diagnostic gates, polynomial safeguards, and current status.
+
+The three primary convergence trajectories have completed. The conservative
+per-seed stability gate stopped the workflow before sensitivity and calibration.
+Fixed 200-epoch calibration is the proposed next step after review/merge, **not a
+completed result or an automatically approved change to the convergence gate**.
+GtS ADF remains pending. Results, W&B data, logs and checkpoints stay local and
+are excluded from this source-only repository change.
+
+Lightweight checks (no W&B runs or full experiments):
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m scripts.run_ann_sweep --config configs/ann_valratio_fine_5x5.yaml --dry-run
+```
+
 This repository implements a **minimal paper-reproduction codebase** for LSTM-based unit-root classification.
 It intentionally avoids architecture or training enhancements not specified by the experiment design.
 

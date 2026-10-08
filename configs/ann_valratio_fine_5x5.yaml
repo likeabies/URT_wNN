@@ -1,0 +1,21 @@
+base_configs:
+  50: configs/ann_50.yaml
+  100: configs/ann_100.yaml
+  250: configs/ann_250.yaml
+
+T_values: [50, 100, 250]
+w2_values_by_group:
+  50:
+    val_72k: [0.310, 0.315, 0.320, 0.325]
+    val_120k: [0.355, 0.360, 0.365, 0.370]
+  100:
+    val_72k: [0.310, 0.315, 0.320, 0.325]
+    val_120k: [0.355, 0.360, 0.365, 0.370]
+  250:
+    val_72k: [0.370, 0.375, 0.380, 0.385]
+    val_120k: [0.425, 0.430, 0.435, 0.440]
+
+data_seeds: [42, 43, 44, 45, 46]
+model_seeds: [7, 17, 27, 37, 47]
+output:
+  root_dir: results
