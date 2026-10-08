@@ -1,0 +1,22 @@
+{
+  "family": "ann_paper2019_reproduction",
+  "T_values": [50, 100, 250],
+  "model_seeds": [7, 17, 27],
+  "data_seed": 20191007,
+  "test_seed": 20261008,
+  "rhos": [1, 0.99, 0.95, 0.9, 0.5, 0.2],
+  "betas": [0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],
+  "w2_values": [0.1, 0.2, 0.35, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0],
+  "checkpoints": [50, 100, 150, 200, 300],
+  "epoch_candidates": [150, 200],
+  "stability_relative_loss": 0.02,
+  "stability_absolute_rate": 0.01,
+  "sensitivity_relative_loss": 0.05,
+  "sensitivity_absolute_rate": 0.03,
+  "polynomial_relative_root_difference": 0.05,
+  "polynomial_absolute_root_difference": 0.01,
+  "lr": 0.001,
+  "batch_size": 256,
+  "estimated_train_seconds_per_epoch": {"50": 2.354589, "100": 2.424740, "250": 2.488411},
+  "runtime_budget_hours": 16
+}

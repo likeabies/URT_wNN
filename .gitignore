@@ -1,6 +1,13 @@
 __pycache__/
 .venv/
 wandb/
+logs/
 *.pyc
+*.pt
+*.pth
+*.ckpt
+*.tmp
+.pytest_cache/
+.DS_Store
 results/*
 !results/.gitkeep
