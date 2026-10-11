@@ -31,3 +31,13 @@ class ANNClassifier(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.output(torch.relu(self.hidden(x)))
+
+
+class Paper2019LSTMClassifier(LSTMClassifier):
+    """LSTM extension using the unchanged normalized ANN inputs (batch, T)."""
+
+    def __init__(self):
+        super().__init__(input_size=1, hidden_size=30, num_layers=1, num_classes=2)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return super().forward(x.unsqueeze(-1))

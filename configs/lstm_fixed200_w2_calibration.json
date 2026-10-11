@@ -1,0 +1,8 @@
+{
+  "base_config": "configs/ann_fixed200_w2_calibration.json",
+  "family": "lstm_paper2019_extension_w2_calibration",
+  "output_dir": "results/lstm_paper2019_extension/w2_calibration",
+  "model": "LSTM",
+  "hidden_size": 30,
+  "num_layers": 1
+}

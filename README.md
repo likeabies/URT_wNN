@@ -1,5 +1,9 @@
 # Minimal Reproduction: LSTM Unit-Root Classification
 
+The separate LSTM fixed-200 coarse-to-fine calibration extension is documented
+in [LSTM_CALIBRATION_PROTOCOL.md](LSTM_CALIBRATION_PROTOCOL.md). It reuses the
+primary ANN DGP and calibration protocol while preserving all ANN workflows.
+
 ## ANN experiment families
 
 **Fixed-200 calibration:** the separately authorized training-only path is
