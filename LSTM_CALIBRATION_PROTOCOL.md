@@ -74,3 +74,64 @@ WANDB_MODE=online PYTORCH_ENABLE_MPS_FALLBACK=0 nohup caffeinate -is \
 `nohup` plus `caffeinate` keeps the process independent of the interactive
 session and prevents idle sleep. A shutdown/reboot still stops the process;
 the runner does not implement resume. The manifest records the launched Git SHA.
+
+## T=50 / T=250 range extension
+
+`scripts/run_lstm_w2_extension.py` and `configs/lstm_w2_range_extension.json`
+extend the completed 99-fit calibration without modifying its files. Before
+execution, the runner checks all 99 checkpoints, saved evaluations, configuration,
+and the scientific source files against the historical Git SHA. Generated data
+must reproduce the historical fingerprint and derived seed for each T.
+
+The unchanged LSTM trainer performs all 54 new coarse fits: T=[50,250],
+w2=[.60,.65,.70,.75,.80,.85,.90,.95,1.00], seeds=[7,17,27]. It then applies the
+original interval selector to the union of old and new coarse results. Fine
+search uses nine equally spaced points including endpoints. All existing
+(T,w2,seed) results/checkpoints, including historical fine points, are reused;
+there are at most 42 new fine fits. T=100 keeps its original w2=.425 candidate
+and statistics with no training. Every production fit still uses exactly 200
+epochs and the original training-cohort evaluation, not validation or test data.
+
+When several intervals cross .05, the original selector prefers one containing
+the closest coarse point; ties use minimum endpoint error, sum of endpoint
+errors, then lower interval. All crossing intervals and the choice are saved.
+If none crosses .05 through w2=1, the original nearest-point adjacent-interval
+fine fallback remains in force, with an explicit unbracketed flag. The range
+is never extrapolated beyond 1. Candidates minimize absolute mean size error
+within the selected fine grid, with lower w2 breaking ties; they are not a
+claim of a globally monotone response or successful independent calibration.
+
+Results go to `results/lstm_paper2019_extension/w2_calibration_range_extension/`;
+an existing destination is refused. The separate online W&B group is
+`lstm_paper2019_extension_w2_calibration_range_extension`. Original per-fit
+W&B logging and checkpoint outputs are unchanged. In addition to coarse/fine
+summaries and candidate reasons, the runner saves `integrated_records.json`,
+`integrated_calibration_summary.csv` (mean and sample SD of size/power),
+`seed_metrics.csv`, and `w2_size.png` / `w2_size.pdf` for all three T values.
+Reused checkpoints remain at their original paths. Source checkpoint SHA-256
+digests and the launched Git SHA are recorded in the new manifest.
+
+```bash
+.venv/bin/python -m scripts.run_lstm_w2_extension --dry-run
+WANDB_MODE=online PYTORCH_ENABLE_MPS_FALLBACK=0 \
+  .venv/bin/python -u -m scripts.run_lstm_w2_extension --smoke
+```
+
+Dry-run validates source files and reports the fit budget and timing estimate
+without training or generating data. Smoke performs two tiny two-epoch fits
+(T=50,250) on MPS, verifies checkpoint reload/evaluation, and uses a separate
+timestamped output path and W&B group. Runtime estimates use measured complete
+historical 200-epoch fits, not the tiny smoke timings.
+
+After merge, launch the complete coarse-to-fine extension once:
+
+```bash
+mkdir -p logs
+WANDB_MODE=online PYTORCH_ENABLE_MPS_FALLBACK=0 nohup caffeinate -is \
+  .venv/bin/python -u -m scripts.run_lstm_w2_extension \
+  > logs/lstm_w2_range_extension_20261014.log 2>&1 < /dev/null &
+```
+
+Coarse and fine proceed automatically. Final independent test is never invoked.
+As with the original runner, interruption requires inspection; there is no
+automatic resume and existing output directories are never overwritten.
