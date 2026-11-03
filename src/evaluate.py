@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 
 from .adf_utils import evaluate_adf_binary, evaluate_adf_multiclass
 from .utils import save_json, timed_block
+from .lstm_binary import binary_metrics as lstm_binary_metrics, predict as lstm_predict
+from .model import LSTMClassifier
 
 
 def evaluate_ann(model, dataset, raw, criterion, batch_size=256, device="cpu"):
@@ -43,7 +45,7 @@ def predict_model(model, ds, batch_size=1000, device="cpu"):
     with torch.no_grad():
         for xb, yb in loader:
             logits = model(xb.to(device))
-            preds.append(logits.argmax(dim=1).cpu().numpy())
+            preds.append((lstm_predict(logits) if isinstance(model, LSTMClassifier) and logits.shape[1] == 2 else logits.argmax(dim=1)).cpu().numpy())
             trues.append(yb.numpy())
     return np.concatenate(preds), np.concatenate(trues)
 
@@ -74,9 +76,9 @@ def evaluate_binary_pipeline(model, test_ds, test_x, test_y, alphas, run_dir: Pa
     with timed_block(timing, "evaluation_total", use_cuda_sync=use_cuda_sync):
         with timed_block(timing, "lstm_test", use_cuda_sync=use_cuda_sync):
             y_pred, y_true = predict_model(model, test_ds, device=device)
-        lstm = binary_metrics(y_true, y_pred)
+        lstm = (lstm_binary_metrics if isinstance(model, LSTMClassifier) else binary_metrics)(y_true, y_pred)
         with timed_block(timing, "adf_test", use_cuda_sync=False):
-            adf = evaluate_adf_binary(test_x, test_y, alphas=alphas, regression="n")
+            adf = evaluate_adf_binary(test_x, 1 - test_y if isinstance(model, LSTMClassifier) else test_y, alphas=alphas, regression="n")
     out = {"lstm": lstm, "adf": adf, "timing": timing}
     save_json(out, Path(run_dir) / "evaluation_binary.json")
     return out
@@ -108,7 +110,7 @@ def evaluate_non_theoretical_table(model, datasets: Dict[str, Dict], alphas, dev
                 pred, y_true = predict_model(model, ds, device=device)
             lstm_acc = float((pred == y_true).mean())
             with timed_block(timing, "adf_test", use_cuda_sync=False):
-                adf = evaluate_adf_binary(x, y, alphas=alphas, regression="n")
+                adf = evaluate_adf_binary(x, 1 - y if isinstance(model, LSTMClassifier) else y, alphas=alphas, regression="n")
         rows.append({
             "p": p_key,
             "composition": pack["composition"],

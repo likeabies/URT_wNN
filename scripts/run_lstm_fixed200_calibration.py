@@ -14,9 +14,11 @@ import wandb
 from torch.utils.data import DataLoader, TensorDataset
 
 from scripts.run_ann_fixed200_calibration import candidates, local_grid, summarize, write_csv
-from scripts.run_ann_paper2019 import dataset, evaluate, fingerprint, save
+from scripts.run_ann_paper2019 import save
+from src.lstm_binary import dataset, evaluate, fingerprint
 from src.model import Paper2019LSTMClassifier
-from src.train import ann_weighted_cross_entropy, train_one_epoch
+from src.train import train_one_epoch
+from src.lstm_binary import weighted_cross_entropy as ann_weighted_cross_entropy
 from src.utils import set_seed
 
 
@@ -37,7 +39,7 @@ def train(c, base, stage, t, seed, raw, w2, epochs):
     name = f"{c['family']}_{stage}_T{t}_w2-{w2:.10g}_ms-{seed}"
     path = base / name
     path.mkdir(exist_ok=False)
-    cfg = dict(model='LSTM', hidden_size=30, num_layers=1, input_size=1, output_size=2,
+    cfg = dict(label_order=['stationary','unit_root'], stored_head_order=['unit_root','stationary'], model='LSTM', hidden_size=30, num_layers=1, input_size=1, output_size=2,
                family=c['family'], stage=stage, T=t, model_seed=seed, data_seed=c['data_seed'],
                w1=1., w2=w2, epoch=epochs, epochs=epochs, optimizer='Adam', lr=.001,
                batch_size=256, weight_decay=0., dropout=0., shuffle=True, device='mps',
@@ -99,7 +101,7 @@ def execute(c, base, state):
     raw_by_t = {}
     for t in c['T_values']:
         raw, derived_seed = dataset(c, t)
-        if len(raw['y']) != 120000 or int((raw['y'] == 0).sum()) != 60000:
+        if len(raw['y']) != 120000 or int((raw['y'] == 1).sum()) != 60000:
             raise RuntimeError('Unexpected training composition')
         for rho in c['rhos']:
             for beta in c['betas']:

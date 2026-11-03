@@ -3,7 +3,10 @@ from torch import nn
 
 
 class LSTMClassifier(nn.Module):
-    """Many-to-one LSTM classifier using final hidden state only."""
+    """Many-to-one LSTM. Binary output: [stationary, unit_root].
+
+    fc storage remains [unit_root, stationary] for historical optimizer/checkpoint
+    compatibility; binary forward permutes columns without changing parameters."""
 
     def __init__(self, input_size: int = 1, hidden_size: int = 30, num_layers: int = 1, num_classes: int = 2):
         super().__init__()
@@ -18,7 +21,8 @@ class LSTMClassifier(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         _, (h_n, _) = self.lstm(x)
         last_hidden = h_n[-1]
-        return self.fc(last_hidden)
+        logits = self.fc(last_hidden)
+        return logits.flip(1) if self.fc.out_features == 2 else logits
 
 
 class ANNClassifier(nn.Module):

@@ -5,7 +5,8 @@ from pathlib import Path
 import torch
 import wandb
 
-from src.data import make_non_theoretical_binary_testset, make_tensordataset
+from src.data import make_tensordataset
+from src.lstm_binary import make_non_theoretical_binary_testset
 from src.evaluate import evaluate_non_theoretical_table
 from src.model import LSTMClassifier
 from src.utils import ensure_dir, load_config, save_json
