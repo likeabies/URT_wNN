@@ -1,0 +1,67 @@
+{
+  "T_values": [
+    50,
+    100,
+    250
+  ],
+  "data_seed": 20191007,
+  "calibration_seed": 20261009,
+  "test_seed": 20261008,
+  "model_seed": 7,
+  "train_per_class": 60000,
+  "calibration_per_class": 12000,
+  "calibration_orders": [
+    0,
+    1
+  ],
+  "test_per_class": 12000,
+  "epochs": 200,
+  "batch_size": 256,
+  "lr": 0.001,
+  "device": "mps",
+  "optimizer": "torch.optim.Adam",
+  "weight_decay": 0.0,
+  "gradient_clipping": false,
+  "hidden_size": 30,
+  "num_layers": 1,
+  "dropout": 0,
+  "alpha": 0.05,
+  "dgp_alpha": 0,
+  "burn_in": 0,
+  "initial_Y": 0,
+  "initial_V": 0,
+  "rhos_I0": [
+    0.99,
+    0.95,
+    0.9,
+    0.5,
+    0.2
+  ],
+  "betas": [
+    0.99,
+    0.95,
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    0
+  ],
+  "normalization": "raw diff first; each level and difference separately centered/maxabs",
+  "initialization": "PyTorch nn.LSTM/nn.Linear defaults; set_seed(7) before each model",
+  "loss": "mean balanced BCE stage1 + mean balanced BCE stage2; weights N/(2*n_class)",
+  "adf": {
+    "regression": "n",
+    "autolag": "AIC",
+    "maxlag": null,
+    "alpha": 0.05,
+    "reject": "stat < 5% critical value"
+  },
+  "wandb_project": "URT_wNN",
+  "wandb_group": "integration_order_lstm_independent_fixed_cycle_20261103",
+  "architecture": "independent_heads_shared_lstm"
+}
