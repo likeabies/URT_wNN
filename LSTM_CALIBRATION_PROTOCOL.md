@@ -7,8 +7,11 @@ Based on ANN fixed-200 main commit `8c23ecf0faa51ce13db86b527199a57d10d6cdf9`
 configuration and its primary DGP. The only classifier change is a distinct
 `Paper2019LSTMClassifier`: input `(batch,T)` is viewed as `(batch,T,1)`, one
 LSTM layer with hidden size 30, last hidden state, and a two-logit linear head.
-There is no dropout. The existing ANN sample-mean WCE is reused with class 0
-unit root / w1=1 and class 1 stationary / w2. The rejection rule is unchanged.
+There is no dropout. LSTM sample-mean WCE uses class 0 stationary / w2 and class 1
+unit root / w1=1. Predicting stationary rejects H0. ANN labels are unchanged.
+Historical fc row storage stays [unit root, stationary]; binary forward flips
+logits to [stationary, unit root], preserving checkpoint and optimizer states.
+Fixed-T fingerprints retain the original ANN label encoding for sample identity.
 
 Data seed **20191007**, its T-specific SeedSequence derivation, the complete
 rho/beta grids, ARMA-innovation DGP, normalization, and sampling counts come

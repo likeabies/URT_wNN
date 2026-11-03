@@ -7,6 +7,8 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from .utils import ensure_dir, save_json
+from .lstm_binary import predict as lstm_predict
+from .model import LSTMClassifier
 
 
 def train_one_epoch(model, loader, criterion, optimizer, device="cpu"):
@@ -24,7 +26,7 @@ def train_one_epoch(model, loader, criterion, optimizer, device="cpu"):
         optimizer.step()
 
         total_loss += float(loss.item()) * xb.size(0)
-        total_correct += int((logits.argmax(dim=1) == yb).sum().item())
+        total_correct += int(((lstm_predict(logits) if isinstance(model, LSTMClassifier) and logits.shape[1] == 2 else logits.argmax(dim=1)) == yb).sum().item())
         total_n += int(xb.size(0))
 
     return total_loss / total_n, total_correct / total_n
@@ -42,7 +44,7 @@ def validate_one_epoch(model, loader, criterion, device="cpu"):
             loss = criterion(logits, yb)
 
             total_loss += float(loss.item()) * xb.size(0)
-            total_correct += int((logits.argmax(dim=1) == yb).sum().item())
+            total_correct += int(((lstm_predict(logits) if isinstance(model, LSTMClassifier) and logits.shape[1] == 2 else logits.argmax(dim=1)) == yb).sum().item())
             total_n += int(xb.size(0))
 
     return total_loss / total_n, total_correct / total_n
