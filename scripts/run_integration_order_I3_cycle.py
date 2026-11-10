@@ -15,7 +15,9 @@ from torch.utils.data import DataLoader, TensorDataset
 import wandb
 
 from src.integration_order_lstm_I3 import (
-    IntegrationOrderLSTM,
+    ARCHITECTURES,
+    make_model,
+    total_loss,
     dataset,
     fingerprint,
     balanced_weights,
@@ -128,6 +130,7 @@ def one(c, t, out):
 
     state = dict(
         status="initializing",
+        architecture=c["architecture"],
         T=t,
         protocol=c,
         pid=os.getpid(),
@@ -192,7 +195,7 @@ def one(c, t, out):
             wandb.init,
             project=c["wandb_project"],
             group=c["wandb_group"],
-            name=f"I0123_T{t}_ms7",
+            name=f"{c['architecture']}_I0123_T{t}_ms7",
             config=dict(
                 c,
                 T=t,
@@ -210,7 +213,7 @@ def one(c, t, out):
 
         set_seed(c["model_seed"])
 
-        model = IntegrationOrderLSTM().to("mps")
+        model = make_model(c["architecture"]).to("mps")
 
         optimizer = torch.optim.Adam(
             model.parameters(),
@@ -272,7 +275,7 @@ def one(c, t, out):
                     weight,
                 )
 
-                loss = parts.sum()
+                loss = total_loss(parts, c["architecture"])
 
                 finite(
                     torch.isfinite(loss),
@@ -351,7 +354,14 @@ def one(c, t, out):
 
             row = dict(
                 epoch=epoch,
-                loss=float(losses.sum() / count),
+                loss=float(
+                    (
+                        losses[0]
+                        + c["stage2_weight"] * losses[1]
+                        + losses[2]
+                    )
+                    / count
+                ),
                 loss1=float(losses[0] / count),
                 loss2=float(losses[1] / count),
                 loss3=float(losses[2] / count),
@@ -550,6 +560,7 @@ def one(c, t, out):
         )
 
         metrics = dict(
+            architecture=c["architecture"],
             T=t,
 
             c1=c1["threshold"],
@@ -750,10 +761,17 @@ def main():
         c,
     )
 
+    queue = [
+        (architecture, t)
+        for architecture in ARCHITECTURES
+        for t in c["T_values"]
+    ]
+
     state = dict(
         status="running",
         pid=os.getpid(),
         started_at=now(),
+        queue=queue,
         runs=[],
     )
 
@@ -762,7 +780,8 @@ def main():
         state,
     )
 
-    for t in c["T_values"]:
+    for architecture, t in queue:
+        state["current_architecture"] = architecture
         state["current_T"] = t
 
         save(
@@ -770,10 +789,20 @@ def main():
             state,
         )
 
-        result = one(
+        arch_dir = a.output / architecture
+        arch_dir.mkdir(exist_ok=True)
+
+        run_config = dict(
             c,
+            architecture=architecture,
+            stage2_weight=0.5 if architecture == "reduced_l2" else 1.0,
+            wandb_group=f"{c['wandb_group']}_{architecture}",
+        )
+
+        result = one(
+            run_config,
             t,
-            a.output / f"T{t}",
+            arch_dir / f"T{t}",
         )
 
         state["runs"].append(result)
@@ -794,7 +823,7 @@ def main():
     )
 
     print(
-        "I(0)-I(3) CYCLE FINISHED",
+        "I(0)-I(3) FOUR-ARCHITECTURE CYCLE FINISHED",
         flush=True,
     )
 
