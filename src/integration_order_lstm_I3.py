@@ -9,6 +9,7 @@ from src.data import normalize_ann_series
 
 RHOS = [.99, .95, .9, .5, .2]
 BETAS = [.99, .95, .9, .8, .7, .6, .5, .4, .3, .2, .1, 0.]
+ARCHITECTURES = ("original_chained", "detach_p1", "independent_encoders", "reduced_l2")
 
 
 class IntegrationOrderLSTM(nn.Module):
@@ -60,6 +61,70 @@ class IntegrationOrderLSTM(nn.Module):
             (logit1, logit2, logit3),
             dim=1
         )
+
+
+class DetachP1LSTM(IntegrationOrderLSTM):
+    """Shared encoder and chained probabilities, but cut p1/p2 gradient paths."""
+
+    def forward(self, level, difference, second_difference):
+        _, (h1, _) = self.lstm(level.unsqueeze(-1))
+        logit1 = self.stage1(h1[-1]).squeeze(-1)
+
+        _, (h2, _) = self.lstm(difference.unsqueeze(-1))
+        p1 = torch.sigmoid(logit1).detach()
+        logit2 = self.stage2(
+            torch.cat((h2[-1], p1.unsqueeze(1)), dim=1)
+        ).squeeze(-1)
+
+        _, (h3, _) = self.lstm(second_difference.unsqueeze(-1))
+        p2 = torch.sigmoid(logit2).detach()
+        logit3 = self.stage3(
+            torch.cat((h3[-1], p2.unsqueeze(1)), dim=1)
+        ).squeeze(-1)
+
+        return torch.stack((logit1, logit2, logit3), dim=1)
+
+
+class IndependentEncodersLSTM(nn.Module):
+    """One independent LSTM/head per stage; no probability chaining."""
+
+    def __init__(self):
+        super().__init__()
+        self.lstm1 = nn.LSTM(1, 30, 1, batch_first=True)
+        self.stage1 = nn.Linear(30, 1)
+
+        self.lstm2 = nn.LSTM(1, 30, 1, batch_first=True)
+        self.stage2 = nn.Linear(30, 1)
+
+        self.lstm3 = nn.LSTM(1, 30, 1, batch_first=True)
+        self.stage3 = nn.Linear(30, 1)
+
+    def forward(self, level, difference, second_difference):
+        _, (h1, _) = self.lstm1(level.unsqueeze(-1))
+        _, (h2, _) = self.lstm2(difference.unsqueeze(-1))
+        _, (h3, _) = self.lstm3(second_difference.unsqueeze(-1))
+
+        logit1 = self.stage1(h1[-1]).squeeze(-1)
+        logit2 = self.stage2(h2[-1]).squeeze(-1)
+        logit3 = self.stage3(h3[-1]).squeeze(-1)
+
+        return torch.stack((logit1, logit2, logit3), dim=1)
+
+
+def make_model(architecture):
+    models = {
+        "original_chained": IntegrationOrderLSTM,
+        "detach_p1": DetachP1LSTM,
+        "independent_encoders": IndependentEncodersLSTM,
+        "reduced_l2": IntegrationOrderLSTM,
+    }
+    return models[architecture]()
+
+
+def total_loss(parts, architecture):
+    if architecture == "reduced_l2":
+        return parts[0] + 0.5 * parts[1] + parts[2]
+    return parts.sum()
 
 
 def balanced_weights(d):
