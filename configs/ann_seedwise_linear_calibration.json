@@ -1,0 +1,31 @@
+{
+  "family": "ann_paper2019_seedwise_linear_calibration",
+  "T_values": [50, 100, 250],
+  "model_seeds": [7, 17, 27],
+  "training_data_seed": 20191007,
+  "validation_data_seed": 20261013,
+  "independent_test_seed": 20261008,
+  "target_size": 0.05,
+  "epochs": 200,
+  "early_stopping": false,
+  "optimizer": "Adam",
+  "learning_rate": 0.001,
+  "batch_size": 256,
+  "calibration": "Separate ordinary least squares size_hat = b0 + b1*w2 for each T, model seed, and calibration method",
+  "train_calibration_sources": [
+    "results/ann_paper2019_reproduction/w2_calibration/run_manifest.json",
+    "results/ann_paper2019_reproduction/w2_calibration_t250_extension/run_manifest.json"
+  ],
+  "validation_calibration_source": "results/ann_paper2019_reproduction/fixed200_validation_calibration/run_manifest.json",
+  "validation_included_stages": ["endpoint", "bracket_extension"],
+  "fine_grid_points_used": false,
+  "clip_w2": false,
+  "project_to_existing_grid": false,
+  "test_based_selection": false,
+  "test_rhos": [1.0, 0.95, 0.9, 0.8],
+  "test_betas": [0.9, 0.6, 0.3, 0.0],
+  "test_sample_size_per_cell": 1000,
+  "expected_new_model_count": 18,
+  "wandb_project": "URT_wNN",
+  "wandb_group": "ann_paper2019_seedwise_linear_calibration"
+}

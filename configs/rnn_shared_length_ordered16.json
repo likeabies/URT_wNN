@@ -1,0 +1,181 @@
+{
+  "epochs": 200,
+  "device": "mps",
+  "dtype": "float32",
+  "data_seed": 20191007,
+  "model_seed": 7,
+  "max_norm": 9553.912684754807,
+  "safe_adam": "grid50_scaled_second_moment_v1",
+  "optimizer": {
+    "name": "Grid50SafeAdam",
+    "lr": 0.001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "rhos": [
+    1,
+    0.99,
+    0.95,
+    0.9,
+    0.5,
+    0.2
+  ],
+  "betas": [
+    0.99,
+    0.95,
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    0
+  ],
+  "ordered_counts": {
+    "50": 31580,
+    "75": 31580,
+    "100": 31580,
+    "125": 31580,
+    "150": 31580,
+    "175": 31580,
+    "200": 31580,
+    "225": 31580,
+    "250": 31580,
+    "275": 31578,
+    "300": 31578,
+    "325": 31578,
+    "350": 31578,
+    "375": 31578,
+    "400": 31578,
+    "425": 31578,
+    "450": 31578,
+    "475": 31578,
+    "500": 31578
+  },
+  "cell_allocation": "Within each class distribute quotient plus one to the earliest remainder cells in listed rho/beta order.",
+  "normalization": "Existing normalize_ann_series: per-series centering and max-absolute scaling.",
+  "architecture": "Existing Paper2019RNNClassifier: tanh, hidden=30, one layer, dropout=0, final h_n[-1] -> Linear(30,2)",
+  "candidates": [
+    {
+      "id": "O01_ASC_w020_bs256",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.2,
+      "batch_size": 256
+    },
+    {
+      "id": "O01_DESC_w020_bs256",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.2,
+      "batch_size": 256
+    },
+    {
+      "id": "O02_ASC_w030_bs256",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.3,
+      "batch_size": 256
+    },
+    {
+      "id": "O02_DESC_w030_bs256",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.3,
+      "batch_size": 256
+    },
+    {
+      "id": "O03_ASC_w020_bs128",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.2,
+      "batch_size": 128
+    },
+    {
+      "id": "O03_DESC_w020_bs128",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.2,
+      "batch_size": 128
+    },
+    {
+      "id": "O04_ASC_w040_bs256",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.4,
+      "batch_size": 256
+    },
+    {
+      "id": "O04_DESC_w040_bs256",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.4,
+      "batch_size": 256
+    },
+    {
+      "id": "O05_ASC_w030_bs128",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.3,
+      "batch_size": 128
+    },
+    {
+      "id": "O05_DESC_w030_bs128",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.3,
+      "batch_size": 128
+    },
+    {
+      "id": "O06_ASC_w020_bs512",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.2,
+      "batch_size": 512
+    },
+    {
+      "id": "O06_DESC_w020_bs512",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.2,
+      "batch_size": 512
+    },
+    {
+      "id": "O07_ASC_w040_bs128",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.4,
+      "batch_size": 128
+    },
+    {
+      "id": "O07_DESC_w040_bs128",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.4,
+      "batch_size": 128
+    },
+    {
+      "id": "O08_ASC_w030_bs512",
+      "family": "ordered",
+      "ordering": "ascending",
+      "w2": 0.3,
+      "batch_size": 512
+    },
+    {
+      "id": "O08_DESC_w030_bs512",
+      "family": "ordered",
+      "ordering": "descending",
+      "w2": 0.3,
+      "batch_size": 512
+    }
+  ],
+  "upstream_commit": "9cb02bd3b93238dcd26c51a40392b4006ca1b722",
+  "safe_adam_path": "src/grid50_safe_adam.py",
+  "safe_adam_sha256": "224bb0692d015d63437cb5d6a5241c155c94cf184d2663a1fabc7ad61c9c2025"
+}
