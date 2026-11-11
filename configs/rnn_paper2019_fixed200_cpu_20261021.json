@@ -1,0 +1,59 @@
+{
+  "family": "rnn_paper2019_fixed200_cpu",
+  "output_dir": "results/rnn_paper2019_fixed200_cpu_20261021",
+  "T_values": [
+    50,
+    100,
+    250
+  ],
+  "model_seeds": [
+    7,
+    17,
+    27
+  ],
+  "data_seed": 20191007,
+  "validation_seed": 20261013,
+  "test_seed": 20261008,
+  "epochs": 200,
+  "rhos": [
+    1,
+    0.99,
+    0.95,
+    0.9,
+    0.5,
+    0.2
+  ],
+  "betas": [
+    0.99,
+    0.95,
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    0
+  ],
+  "coarse_w2": [
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55
+  ],
+  "extension_step": 0.05,
+  "fine_points": 5,
+  "target": 0.05,
+  "lr": 0.001,
+  "batch_size": 256,
+  "weight_decay": 0,
+  "project": "URT_wNN",
+  "entity": "rdces-chung-ang-university",
+  "preferred_device": "cpu"
+}

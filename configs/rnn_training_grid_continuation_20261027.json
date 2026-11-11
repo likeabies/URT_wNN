@@ -1,0 +1,8 @@
+{
+  "source": "results/rnn_paper2019_fixed200_cpu_20261021",
+  "output": "results/rnn_training_grid_continuation_20261027",
+  "group": "rnn_training_grid_continuation_20261027",
+  "epochs": [200, 300, 400],
+  "calibration": "training empirical size; no selection; all original training-grid points",
+  "test_role": "diagnostic only; never tuning"
+}
