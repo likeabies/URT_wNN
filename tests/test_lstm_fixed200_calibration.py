@@ -12,7 +12,7 @@ from scripts import run_ann_fixed200_calibration as ann
 from scripts import run_lstm_fixed200_calibration as lstm
 from scripts.run_ann_paper2019 import dataset, fingerprint
 from src.model import LSTMClassifier, Paper2019LSTMClassifier
-from src.train import ann_weighted_cross_entropy
+from src.lstm_binary import weighted_cross_entropy as ann_weighted_cross_entropy
 
 
 class LSTMCalibrationTests(unittest.TestCase):
@@ -24,12 +24,13 @@ class LSTMCalibrationTests(unittest.TestCase):
         self.assertEqual(len(c['T_values']) * len(c['coarse_w2']) * len(c['model_seeds']), 72)
         self.assertIs(lstm.local_grid, ann.local_grid)
         self.assertIs(lstm.candidates, ann.candidates)
-        self.assertIs(lstm.dataset, dataset)
         for t in c['T_values']:
             original, seed = dataset(base, t, smoke=True)
             extension, extension_seed = lstm.dataset(c, t, smoke=True)
             self.assertEqual(seed, extension_seed)
-            self.assertEqual(fingerprint(original), fingerprint(extension))
+            np.testing.assert_array_equal(original["x"], extension["x"])
+            np.testing.assert_array_equal(1-original["y"], extension["y"])
+            self.assertEqual(fingerprint(original), lstm.fingerprint(extension))
 
     def test_shapes_backward_labels_and_unchanged_original_lstm(self):
         for t in (50, 100, 250):
@@ -45,7 +46,7 @@ class LSTMCalibrationTests(unittest.TestCase):
             self.assertEqual(logits.shape, (3, 2))
             labels = torch.tensor([0, 1, 1])
             logp = logits.log_softmax(1)
-            expected = -(logp[0, 0] + .3 * logp[1, 1] + .3 * logp[2, 1]) / 3
+            expected = -(.3 * logp[0, 0] + logp[1, 1] + logp[2, 1]) / 3
             loss = ann_weighted_cross_entropy(logits, labels, 1., .3)
             torch.testing.assert_close(loss, expected)
             loss.backward()
@@ -62,7 +63,7 @@ class LSTMCalibrationTests(unittest.TestCase):
                     n = 5000 if r == 1 else 1000
                     rho.extend([r] * n)
                     beta.extend([b] * n)
-            raw = dict(rho=np.array(rho), beta=np.array(beta), y=(np.array(rho) != 1).astype(int))
+            raw = dict(rho=np.array(rho), beta=np.array(beta), y=(np.array(rho) == 1).astype(int))
             identities[t] = id(raw)
             return raw, 123 + t
 

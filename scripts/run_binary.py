@@ -5,7 +5,8 @@ from pathlib import Path
 import torch
 import wandb
 
-from src.data import BINARY_LABELS, make_binary_dataset, make_tensordataset
+from src.data import make_tensordataset
+from src.lstm_binary import LABELS as BINARY_LABELS, make_binary_dataset
 from src.evaluate import evaluate_binary_pipeline
 from src.model import LSTMClassifier
 from src.train import train_model

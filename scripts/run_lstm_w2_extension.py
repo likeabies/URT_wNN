@@ -13,15 +13,16 @@ import numpy as np
 import torch
 
 from scripts.run_ann_fixed200_calibration import candidates, local_grid, summarize, write_csv
-from scripts.run_ann_paper2019 import dataset, evaluate, fingerprint, save
+from scripts.run_ann_paper2019 import save
+from src.lstm_binary import dataset, evaluate, fingerprint
 from scripts.run_lstm_fixed200_calibration import train
 from src.model import Paper2019LSTMClassifier
-from src.train import ann_weighted_cross_entropy
+from src.lstm_binary import weighted_cross_entropy as ann_weighted_cross_entropy
 
 CONFIG = Path('configs/lstm_w2_range_extension.json')
 SCIENTIFIC_FILES = (
     'scripts/run_lstm_fixed200_calibration.py', 'scripts/run_ann_paper2019.py',
-    'scripts/run_ann_fixed200_calibration.py', 'src/data.py', 'src/model.py',
+    'scripts/run_ann_fixed200_calibration.py', 'src/data.py', 'src/model.py','src/lstm_binary.py',
     'src/train.py', 'src/evaluate.py', 'src/utils.py',
 )
 
