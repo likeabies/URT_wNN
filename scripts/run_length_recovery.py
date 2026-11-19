@@ -1,5 +1,5 @@
 """Train the prescribed fixed-T length-recovery queue once; no calibration."""
-import os,json,csv,hashlib,shutil,traceback
+import os,json,csv,hashlib,shutil,traceback,argparse
 from pathlib import Path
 from datetime import datetime,timezone
 from time import perf_counter
@@ -16,7 +16,7 @@ from src.utils import set_seed
 from scripts.run_ann_paper2019 import save,fingerprint
 from scripts.run_lstm_rho_aux import control_source,classification
 
-OUT=Path('results/length_recovery_T250_20261118')
+OUT=None
 
 def now():return datetime.now(timezone.utc).isoformat()
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
@@ -65,16 +65,26 @@ def train(model,arrays,kind,path,w2,state):
     return model
 
 
+def parse_args():
+    p=argparse.ArgumentParser(description='Fixed-T length recovery with configurable T250 teacher and recovery seed.')
+    p.add_argument('--teacher-seed',type=int,choices=[7,17,27],default=7)
+    p.add_argument('--recovery-seed',type=int,choices=[7,17,27],default=7)
+    p.add_argument('--out',type=Path,default=None)
+    return p.parse_args()
+
 def main():
+    global OUT
+    args=parse_args();teacher_seed=args.teacher_seed;recovery_seed=args.recovery_seed
+    OUT=args.out or Path(f'results/length_recovery_T250_teacher{teacher_seed}_recovery{recovery_seed}_20261119')
     assert os.environ.get('PYTORCH_ENABLE_MPS_FALLBACK')=='0' and torch.backends.mps.is_available()
     assert BINARY_LABELS=={'unit_root':0,'stationary':1}
-    cfg,cp,provenance=control_source();c=json.loads(Path('configs/ann_paper2019_reproduction.json').read_text())
+    cfg,cp,provenance=control_source(model_seed=teacher_seed);c=json.loads(Path('configs/ann_paper2019_reproduction.json').read_text())
     OUT.mkdir(exist_ok=False);snapshot=OUT/'source_snapshot';snapshot.mkdir()
     sources=['src/length_recovery.py','scripts/run_length_recovery.py','src/model.py','src/data.py','src/train.py',
              'src/utils.py','src/evaluate.py','scripts/run_ann_paper2019.py','scripts/run_lstm_rho_aux.py']
     for s in sources:shutil.copyfile(s,snapshot/Path(s).name)
     save(OUT/'source_hashes.json',{s:sha(s) for s in sources})
-    save(OUT/'protocol.json',dict(control=provenance,data=c,epochs=200,batch_size=256,lr=.001,seed=7,
+    save(OUT/'protocol.json',dict(control=provenance,data=c,epochs=200,batch_size=256,lr=.001,teacher_model_seed=teacher_seed,recovery_seed=recovery_seed,
         short_lengths=[50,100],teacher_frozen=True,no_calibration=True,
         forecast='raw float32 prefix + shifted raw suffix teacher forcing 1.0; raw suffix MSE; autoregressive inference',
         preprocessing='exact original normalize_ann_series separately on prefix; completion normalized after concatenation',
@@ -108,7 +118,7 @@ def main():
                 save(OUT/'comparison.json',comparison)
             record('oracle_T250',oracle);record('direct_short_baseline',infer(teacher,shorttest))
             state.update(status='training',T=t,method='method1_forecast',completed_epoch=0);save(OUT/'run_manifest.json',state)
-            set_seed(7);forecast=Completion()
+            set_seed(recovery_seed);forecast=Completion()
             raw=training['raw'].astype(np.float32)
             train(forecast,[raw[:,:t].copy(),raw[:,t-1:249].copy(),raw[:,t:].copy()],'forecast',p/'method1_forecast',cfg['w2'],state)
             prefix=test['raw'][:,:t].astype(np.float32)
@@ -118,19 +128,19 @@ def main():
             record('method1_sequence_teacher_head',infer(teacher,normalize_ann_series(completed).astype(np.float32)))
             np.save(p/'predicted_suffix.npy',suffix)
             fh=infer(forecast.encoder,raw[:,:t]);fht=infer(forecast.encoder,prefix)
-            state.update(method='method1_forecast_hidden_new_head',completed_epoch=0);set_seed(7);head=nn.Linear(30,2)
+            state.update(method='method1_forecast_hidden_new_head',completed_epoch=0);set_seed(recovery_seed);head=nn.Linear(30,2)
             train(head,[fh,training['y']],'head',p/'method1_forecast_hidden_new_head',cfg['w2'],state)
             record('method1_forecast_hidden_new_head',infer(head,fht));del head,fh,fht,forecast,raw,completed,suffix
-            state.update(method='method2_hidden',completed_epoch=0);set_seed(7);student=Encoder(teacher.lstm.state_dict())
+            state.update(method='method2_hidden',completed_epoch=0);set_seed(recovery_seed);student=Encoder(teacher.lstm.state_dict())
             train(student,[short,targets_h],'hidden',p/'method2_hidden',cfg['w2'],state)
             h=infer(student,short);ht=infer(student,shorttest)
             hidden_rows.append(dict(T=t,hidden_state_MSE=float(np.mean((ht-oracle_h)**2))))
             record('method2_hidden_teacher_head',infer(teacher.fc,ht))
             np.save(p/'predicted_hidden.npy',ht)
-            state.update(method='method2_hidden_new_head',completed_epoch=0);set_seed(7);head=nn.Linear(30,2)
+            state.update(method='method2_hidden_new_head',completed_epoch=0);set_seed(recovery_seed);head=nn.Linear(30,2)
             train(head,[h,training['y']],'head',p/'method2_hidden_new_head',cfg['w2'],state)
             record('method2_hidden_new_head',infer(head,ht));del head,h,ht,student
-            state.update(method='method3_logit',completed_epoch=0);set_seed(7);student=LogitStudent(teacher.lstm.state_dict())
+            state.update(method='method3_logit',completed_epoch=0);set_seed(recovery_seed);student=LogitStudent(teacher.lstm.state_dict())
             train(student,[short,targets_z],'logit',p/'method3_logit',cfg['w2'],state)
             logits=infer(student,shorttest)
             logit_rows.append(dict(T=t,logit_MSE=float(np.mean((logits-oracle)**2))))
