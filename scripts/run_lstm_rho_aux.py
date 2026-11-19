@@ -34,18 +34,18 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def control_source():
+def control_source(model_seed=7):
     candidates=json.loads((SOURCE/'calibration_candidates.json').read_text())
     selected=[r for r in candidates if r['T']==250]
     assert len(selected)==1
     w2=selected[0]['w2']
     records=json.loads((SOURCE/'integrated_records.json').read_text())
-    found=[r for r in records if r['T']==250 and r['model_seed']==7 and r['w2']==w2]
+    found=[r for r in records if r['T']==250 and r['model_seed']==model_seed and r['w2']==w2]
     assert len(found)==1
     record=found[0];path=Path(record['path']);cfg=json.loads((path/'config_snapshot.json').read_text())
     expected=dict(model='LSTM',T=250,hidden_size=30,num_layers=1,input_size=1,output_size=2,
                   epochs=200,lr=.001,batch_size=256,dropout=0,weight_decay=0,data_seed=20191007,
-                  model_seed=7,w1=1.,w2=w2,optimizer='Adam',device='mps',shuffle=True,
+                  model_seed=model_seed,w1=1.,w2=w2,optimizer='Adam',device='mps',shuffle=True,
                   validation=False,early_stopping=False,n_train=120000)
     for k,v in expected.items():
         if cfg[k]!=v:raise ValueError(f'Control protocol mismatch {k}: {cfg[k]} != {v}')
