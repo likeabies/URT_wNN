@@ -161,6 +161,7 @@ def integrated_outputs(base, records, selected):
 def execute(c, base, state, historical, frozen_candidates):
     previous = [dict(r, origin='historical') for r in historical['runs']]
     existing = {key(r): r for r in previous}
+    existing.update({key(r): r for r in state['runs']})
     raw_by_t = {}
     for t in c['T_values']:
         raw, derived = dataset(c, t)
@@ -176,7 +177,8 @@ def execute(c, base, state, historical, frozen_candidates):
     def one(stage, t, w, seed):
         if (t, w, seed) in existing:
             raise RuntimeError('Attempt to retrain an existing checkpoint')
-        info = train(c, base, stage, t, seed, raw_by_t[t], w, 200)
+        attempt_stage = stage + ('_' + state['resume_id'] if state.get('resume_id') else '')
+        info = train(c, base, attempt_stage, t, seed, raw_by_t[t], w, 200)
         ev = info['evaluations']['200']
         source = state['datasets'][str(t)]
         record = dict(model='LSTM', stage=stage, T=t, w2=w, model_seed=seed, data_seed=c['data_seed'],
@@ -198,12 +200,15 @@ def execute(c, base, state, historical, frozen_candidates):
     for t in c['T_values']:
         for w in c['new_coarse_w2']:
             for seed in c['model_seeds']:
-                coarse.append(one('extension_coarse', t, w, seed))
+                k = (t, w, seed)
+                coarse.append(existing[k] if k in existing else one('extension_coarse', t, w, seed))
             write_csv(base / 'coarse_summary.csv', summarize(coarse, 'combined_coarse'))
     coarse_rows = summarize(coarse, 'combined_coarse')
     plans = {str(t): fine_plan([r for r in coarse_rows if r['T'] == t], c['target']) for t in c['T_values']}
     planned = {(t,w,s) for t in c['T_values'] for w in plans[str(t)]['w2_values'] for s in c['model_seeds']}
-    new_fine = planned - set(existing)
+    # Budget counts all extension fine fits, including those restored on resume.
+    coarse_keys = {key(r) for r in coarse}
+    new_fine = planned - {key(r) for r in previous} - coarse_keys
     if len(new_fine) > 42:
         raise RuntimeError('Fine fit count exceeds the authorized maximum')
     state.update(status='extension_fine_running', fine_plans=plans, planned_new_fine_fits=len(new_fine),
@@ -234,6 +239,8 @@ def execute(c, base, state, historical, frozen_candidates):
                  new_fine_fits=len(new_fine), final_independent_test=False,
                  unbracketed_T=[int(t) for t,p in plans.items() if not p['bracketed']],
                  T100='Preserved historical w2=.425 candidate; no new training')
+    if state.get('resume_id'):
+        state['resume_new_runs_completed'] = len(state['runs']) - state['resume_reused_runs']
     persist()
     print(f"Completed 54 new coarse + {len(new_fine)} new fine fits; no independent test.",flush=True)
 
@@ -251,14 +258,82 @@ def smoke(c, base):
     save(base/'smoke_summary.json',dict(status='passed',runs=runs))
 
 
+def resume_records(c, source):
+    """Read-only recovery. A record alone never proves a complete 200-epoch fit."""
+    root = Path(c['output_dir'])
+    manifest = json.loads((root/'run_manifest.json').read_text())
+    if json.loads((root/'protocol.json').read_text()) != c:
+        raise RuntimeError('Resume protocol differs from the original extension')
+    records = {key(r): r for r in manifest['runs']}
+    if len(records) != len(manifest['runs']):
+        raise RuntimeError('Duplicate manifest run identities')
+    for path in root.rglob('calibration_record.json'):
+        r = json.loads(path.read_text())
+        if key(r) in records and records[key(r)] != r:
+            raise RuntimeError('Conflicting completed records: ' + str(path))
+        records[key(r)] = r
+    completed = []
+    for r in records.values():
+        p = Path(r['path'])
+        required = ['calibration_record.json','summary.json','config_snapshot.json',
+                    'history.json','train_epoch_200.json','epoch_200.pt']
+        if any(not (p/name).is_file() for name in required):
+            continue
+        cfg = json.loads((p/'config_snapshot.json').read_text())
+        history = json.loads((p/'history.json').read_text())
+        summary = json.loads((p/'summary.json').read_text())
+        if (r.get('status') != 'finished' or r.get('epochs') != 200 or
+                summary.get('status') != 'finished' or summary.get('epochs') != 200 or
+                [h['epoch'] for h in history] != list(range(1,201))):
+            continue
+        cp = torch.load(p/'epoch_200.pt',map_location='cpu',weights_only=True)
+        if cp['epoch'] != 200:
+            continue
+        expected = dict(T=r['T'],w2=r['w2'],model_seed=r['model_seed'],data_seed=c['data_seed'],
+                        model='LSTM',hidden_size=30,num_layers=1,input_size=1,output_size=2,
+                        epochs=200,w1=1.,optimizer='Adam',lr=.001,batch_size=256,weight_decay=0.,
+                        dropout=0.,shuffle=True,device='mps',validation=False,early_stopping=False,
+                        evaluation_cohort='training',n_train=120000,
+                        data_fingerprint=source['datasets'][str(r['T'])]['fingerprint'])
+        if any(cfg.get(k) != v for k,v in expected.items()):
+            raise RuntimeError('Completed resume config mismatch: '+str(p))
+        ev = json.loads((p/'train_epoch_200.json').read_text())
+        if ev['overall'] != r['metrics'] or ev['by_parameter'] != r['by_parameter'] or summary['evaluations']['200'] != ev:
+            raise RuntimeError('Completed resume evaluation mismatch: '+str(p))
+        if not all(torch.isfinite(v).all().item() for v in cp['model'].values()):
+            raise RuntimeError('Nonfinite completed checkpoint: '+str(p))
+        Paper2019LSTMClassifier().load_state_dict(cp['model'])
+        completed.append(r)
+    coarse = [r for r in source['runs'] if r['stage']=='coarse' and r['T'] in c['T_values']]
+    coarse += [r for r in completed if r['stage']=='extension_coarse']
+    coarse_expected = {(t,w,s) for t in c['T_values'] for w in c['new_coarse_w2'] for s in c['model_seeds']}
+    if {key(r) for r in completed if r['stage']=='extension_coarse'} != coarse_expected:
+        raise RuntimeError('Resume requires the completed 54-fit extension coarse stage')
+    rows = summarize(coarse,'combined_coarse')
+    plans = {str(t):fine_plan([r for r in rows if r['T']==t],c['target']) for t in c['T_values']}
+    if plans != manifest['fine_plans']:
+        raise RuntimeError('Resume fine grid differs from saved plan')
+    planned = {(t,w,s) for t in c['T_values'] for w in plans[str(t)]['w2_values'] for s in c['model_seeds']}
+    expected = coarse_expected | (planned - {key(r) for r in source['runs']})
+    if not {key(r) for r in completed} <= expected:
+        raise RuntimeError('Unexpected completed run outside extension grid')
+    return completed, sorted(expected - {key(r) for r in completed})
+
+
 def main():
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument('--dry-run',action='store_true')
     mode.add_argument('--smoke',action='store_true')
+    mode.add_argument('--resume',action='store_true')
+    mode.add_argument('--check-resume',action='store_true')
     args = parser.parse_args()
     c, source, selected, hashes = source_inputs()
     estimate = runtime_estimate(source['runs'])
+    recovered, remaining = resume_records(c, source) if args.resume or args.check_resume else ([],[])
+    if args.check_resume:
+        print(json.dumps(dict(reused=len(recovered),remaining=len(remaining),remaining_runs=remaining),indent=2))
+        return
     if args.dry_run:
         print(json.dumps(dict(new_coarse_fits=54,max_new_fine_fits=42,coarse_grid=c['new_coarse_w2'],
                               T_values=c['T_values'],fine_points=9,epochs=200,verified_source_checkpoints=len(hashes),
@@ -270,6 +345,9 @@ def main():
         stamp=datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         c['family'] += '_smoke_' + stamp
         base=Path(c['output_dir']).parent / ('extension_smoke_' + stamp)
+    elif args.resume:
+        stamp=datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')
+        base=Path(c['output_dir']) / ('resume_' + stamp)
     else:
         base=Path(c['output_dir'])
     base.mkdir(parents=True,exist_ok=False)
@@ -279,6 +357,11 @@ def main():
                source_dir=c['source_dir'],source_git_sha=source['git_sha'],source_checkpoints_sha256=hashes,
                git_sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                expected_new_coarse_fits=54,max_new_fine_fits=42,datasets={},runs=[],final_independent_test=False)
+    if args.resume:
+        state.update(resume_id='resume_'+stamp,resume_reused_runs=len(recovered),
+                     resume_planned_new_runs=len(remaining),runs=recovered,
+                     runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+        print(f'Resume: reuse {len(recovered)} completed fits; train {len(remaining)} remaining fits. Output: {base}',flush=True)
     save(base/'run_manifest.json',state)
     start=perf_counter()
     try:

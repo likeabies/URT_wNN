@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "path": "h_n[-1] only",
+  "rows": [
+    {
+      "T": 50,
+      "batch": 0,
+      "hh_max_abs_error": 5.122274160385132e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999403,
+      "max_gradient_error": 3.3527612686157227e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 50,
+      "batch": 1,
+      "hh_max_abs_error": 3.4924596548080444e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999387,
+      "max_gradient_error": 2.9802322387695312e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 50,
+      "batch": 2,
+      "hh_max_abs_error": 5.122274160385132e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999368,
+      "max_gradient_error": 2.9802322387695312e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 250,
+      "batch": 0,
+      "hh_max_abs_error": 5.122274160385132e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999495,
+      "max_gradient_error": 2.9802322387695312e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 250,
+      "batch": 1,
+      "hh_max_abs_error": 4.6566128730773926e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999407,
+      "max_gradient_error": 4.470348358154297e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 250,
+      "batch": 2,
+      "hh_max_abs_error": 4.190951585769653e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999456,
+      "max_gradient_error": 4.470348358154297e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 500,
+      "batch": 0,
+      "hh_max_abs_error": 3.725290298461914e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999443,
+      "max_gradient_error": 2.9802322387695312e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 500,
+      "batch": 1,
+      "hh_max_abs_error": 4.190951585769653e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999438,
+      "max_gradient_error": 3.3527612686157227e-08,
+      "finite_adam": true
+    },
+    {
+      "T": 500,
+      "batch": 2,
+      "hh_max_abs_error": 4.190951585769653e-09,
+      "sign_mismatch": 0,
+      "cosine": 0.9999999999999447,
+      "max_gradient_error": 2.9802322387695312e-08,
+      "finite_adam": true
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "experiment": "lstm_multilength_grid50_equalN_safeadam_20261020",
+  "output_dir": "results/lstm_multilength_grid50_equalN_safeadam_20261020",
+  "data_seed": 20191007,
+  "calibration_seed": 20261019,
+  "test_seed": 20261020,
+  "model_seed": 7,
+  "min_length": 50,
+  "max_length": 500,
+  "rhos": [
+    1.0,
+    0.99,
+    0.95,
+    0.9,
+    0.5,
+    0.2
+  ],
+  "betas": [
+    0.99,
+    0.95,
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    0.0
+  ],
+  "train_counts": [
+    2500,
+    500
+  ],
+  "calibration_counts": [
+    500,
+    0
+  ],
+  "test_counts": [
+    500,
+    100
+  ],
+  "epochs": 200,
+  "batch_size": 256,
+  "lr": 0.001,
+  "w1": 1.0,
+  "coarse_w2": [
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+  ],
+  "extension_step": 0.2,
+  "fine_step": 0.05,
+  "target_size": 0.05,
+  "generation_chunk": 2048,
+  "device": "mps",
+  "batching": "exact_length",
+  "classification": "h_n[-1]",
+  "length_grid": [
+    50,
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    400,
+    450,
+    500
+  ],
+  "optimizer_implementation": "grid50_scaled_second_moment_v1",
+  "pause_after_epoch": 1
+}

@@ -1,0 +1,56 @@
+{
+  "data_seed": 20191007,
+  "model_seed": 7,
+  "min_length": 50,
+  "max_length": 500,
+  "rhos": [
+    1.0,
+    0.99,
+    0.95,
+    0.9,
+    0.5,
+    0.2
+  ],
+  "betas": [
+    0.99,
+    0.95,
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    0.0
+  ],
+  "train_counts": [
+    2500,
+    500
+  ],
+  "epochs": 200,
+  "batch_size": 256,
+  "lr": 0.001,
+  "w1": 1.0,
+  "generation_chunk": 2048,
+  "device": "mps",
+  "batching": "exact_length",
+  "classification": "h_n[-1]",
+  "length_grid": [
+    50,
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    400,
+    450,
+    500
+  ],
+  "optimizer_implementation": "grid50_scaled_second_moment_v1",
+  "experiment": "lstm_grid50_gradient_observation_20261026",
+  "w2": 0.2,
+  "max_norm": 9553.912684754807
+}
