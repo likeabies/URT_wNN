@@ -1,0 +1,5 @@
+{
+  "pid": 15546,
+  "log": "/Users/joganghyeon/URT_wNN/logs/lstm_grid50_safeadam_resume_20261023.log",
+  "runner": "scripts.run_lstm_grid50_safeadam_production"
+}

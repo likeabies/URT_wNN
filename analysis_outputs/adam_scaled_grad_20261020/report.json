@@ -1,0 +1,119 @@
+{
+  "beta2": 0.999,
+  "dtype": "float32",
+  "torch_version": "2.7.1",
+  "cases": [
+    {
+      "case": "original_large",
+      "gradient": [
+        7.243555335899919e+19
+      ],
+      "initial_state": [
+        1000000000000.0
+      ],
+      "results": {
+        "cpu": {
+          "original": {
+            "values": [
+              "5.24690978169386e+36"
+            ],
+            "finite": true
+          },
+          "scaled_grad": {
+            "values": [
+              "5.24690914786856e+36"
+            ],
+            "finite": true
+          }
+        },
+        "mps": {
+          "original": {
+            "values": [
+              "inf"
+            ],
+            "finite": false
+          },
+          "scaled_grad": {
+            "values": [
+              "5.24690914786856e+36"
+            ],
+            "finite": true
+          }
+        }
+      },
+      "cpu_original_vs_mps_scaled_max_abs_error": 6.338253001141147e+29,
+      "cpu_original_vs_mps_scaled_max_relative_error": 1.2079973288763063e-07,
+      "cpu_original_vs_cpu_scaled_max_abs_error": 6.338253001141147e+29,
+      "numerically_matches": true
+    },
+    {
+      "case": "normal",
+      "gradient": [
+        0.0,
+        1e-06,
+        -0.01,
+        1.0,
+        -10.0
+      ],
+      "initial_state": [
+        0.0,
+        1e-08,
+        0.1,
+        2.0,
+        100.0
+      ],
+      "results": {
+        "cpu": {
+          "original": {
+            "values": [
+              "0.0",
+              "9.990000826576306e-09",
+              "0.09990009665489197",
+              "1.999000072479248",
+              "100.0"
+            ],
+            "finite": true
+          },
+          "scaled_grad": {
+            "values": [
+              "0.0",
+              "9.990000826576306e-09",
+              "0.09990009665489197",
+              "1.999000072479248",
+              "100.0"
+            ],
+            "finite": true
+          }
+        },
+        "mps": {
+          "original": {
+            "values": [
+              "0.0",
+              "9.990000826576306e-09",
+              "0.09990009665489197",
+              "1.999000072479248",
+              "100.0"
+            ],
+            "finite": true
+          },
+          "scaled_grad": {
+            "values": [
+              "0.0",
+              "9.990000826576306e-09",
+              "0.09990009665489197",
+              "1.999000072479248",
+              "100.0"
+            ],
+            "finite": true
+          }
+        }
+      },
+      "cpu_original_vs_mps_scaled_max_abs_error": 0.0,
+      "cpu_original_vs_mps_scaled_max_relative_error": 0.0,
+      "cpu_original_vs_cpu_scaled_max_abs_error": 0.0,
+      "numerically_matches": true
+    }
+  ],
+  "elapsed_seconds": 0.05537725007161498,
+  "outcome": "A"
+}

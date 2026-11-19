@@ -1,0 +1,307 @@
+{
+  "status": "awaiting_user_approval",
+  "source_hashes": {
+    "scripts/run_lstm_variable_length.py": "47ff2052be4d5bb98614e1d52d6b913131bc6b4db52f351b02389a9e6784b73c",
+    "src/variable_length_lstm.py": "13b64c5cafa465ed4bc53ba3d0a3ec1283e2ed79cb0f4f6812f094f8a5c33076",
+    "src/data.py": "3b2e08dbe0193f9b9a5ee8e93c113629f12d487c918238099f955125d6e79796",
+    "src/model.py": "6fdb23288281e791f63259e1ba76443e7839d8aea225311364294f92f1971cbe",
+    "src/train.py": "a65278ad860e4917c77f9d2cc0e5db0110595346120c776d261fb4f8d5ce29a6",
+    "src/utils.py": "01d6c7756476361f023c63e34ce6712e54f7891e1b34b9532a7e8912dfced667",
+    "scripts/run_ann_paper2019.py": "21f1c3c132018e1db5d8e78ff1fd96b01dc18e3c4250731e154455e16749f62c",
+    "scripts/run_ann_fixed200_calibration.py": "9796f9d32a77f64758e4622360d3afa97639054754d0a19977bfadf491939244",
+    "scripts/run_lstm_multilength_grid50.py": "4813f7b4b5dba8a14d462996d4534ae529144c2efe1a7e313e077f2b4328eb3f",
+    "src/grid50_safe_adam.py": "224bb0692d015d63437cb5d6a5241c155c94cf184d2663a1fabc7ad61c9c2025",
+    "src/grid50_step_audit.py": "64784aa9fde3bf5a58568ae72db56f39ef3955b7ffbcaa34c7058e46efb3d5d6",
+    "scripts/run_lstm_grid50_safeadam_gate.py": "bbe6821e1ab11572957214341504d98096f075bc7274e74a2eb5592a5491720f"
+  },
+  "device": "mps",
+  "protocol": {
+    "experiment": "lstm_multilength_grid50_equalN_safeadam_20261020",
+    "output_dir": "results/lstm_multilength_grid50_equalN_safeadam_20261020",
+    "data_seed": 20191007,
+    "calibration_seed": 20261019,
+    "test_seed": 20261020,
+    "model_seed": 7,
+    "min_length": 50,
+    "max_length": 500,
+    "rhos": [
+      1.0,
+      0.99,
+      0.95,
+      0.9,
+      0.5,
+      0.2
+    ],
+    "betas": [
+      0.99,
+      0.95,
+      0.9,
+      0.8,
+      0.7,
+      0.6,
+      0.5,
+      0.4,
+      0.3,
+      0.2,
+      0.1,
+      0.0
+    ],
+    "train_counts": [
+      2500,
+      500
+    ],
+    "calibration_counts": [
+      500,
+      0
+    ],
+    "test_counts": [
+      500,
+      100
+    ],
+    "epochs": 200,
+    "batch_size": 256,
+    "lr": 0.001,
+    "w1": 1.0,
+    "coarse_w2": [
+      0.2,
+      0.4,
+      0.6,
+      0.8,
+      1.0
+    ],
+    "extension_step": 0.2,
+    "fine_step": 0.05,
+    "target_size": 0.05,
+    "generation_chunk": 2048,
+    "device": "mps",
+    "batching": "exact_length",
+    "classification": "h_n[-1]",
+    "length_grid": [
+      50,
+      100,
+      150,
+      200,
+      250,
+      300,
+      350,
+      400,
+      450,
+      500
+    ],
+    "optimizer_implementation": "grid50_scaled_second_moment_v1",
+    "pause_after_epoch": 1
+  },
+  "datasets": {
+    "train": {
+      "status": "complete",
+      "split": "train",
+      "seed": 20191007,
+      "n": 600000,
+      "unit_root": 300000,
+      "stationary": 300000,
+      "fingerprint": "10e7de10dc944a907ced1d997b8501a5a152b16b24f57486cb16c4298750c08b",
+      "format": "flat_valid_values_and_offsets",
+      "length_min": 50,
+      "length_max": 500,
+      "length_mean": 275.0,
+      "by_T": {
+        "50": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "100": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "150": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "200": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "250": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "300": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "350": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "400": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "450": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        },
+        "500": {
+          "n": 60000,
+          "unit_root": 30000,
+          "stationary": 30000
+        }
+      },
+      "derived_seeds": {
+        "50": 2191355032,
+        "100": 3152639672,
+        "150": 230637283,
+        "200": 3423783785,
+        "250": 2928367625,
+        "300": 1041958348,
+        "350": 2032609216,
+        "400": 2339620337,
+        "450": 1870117946,
+        "500": 340713609
+      },
+      "generation_chunk": 2048,
+      "rng": "SeedSequence([split_seed,T]) for grid; independent length/noise child streams for random T",
+      "path": "/Users/joganghyeon/URT_wNN/results/lstm_multilength_grid50_equalN_safeadam_20261020/datasets/train_20261020_054648_592580"
+    },
+    "calibration": {
+      "status": "complete",
+      "split": "calibration",
+      "seed": 20261019,
+      "n": 60000,
+      "unit_root": 60000,
+      "stationary": 0,
+      "fingerprint": "aaf51caaa464c70e0b15304ac142048b7100bae7465bb45812fc949155f156fe",
+      "format": "flat_valid_values_and_offsets",
+      "length_min": 50,
+      "length_max": 500,
+      "length_mean": 275.0,
+      "by_T": {
+        "50": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "100": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "150": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "200": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "250": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "300": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "350": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "400": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "450": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        },
+        "500": {
+          "n": 6000,
+          "unit_root": 6000,
+          "stationary": 0
+        }
+      },
+      "derived_seeds": {
+        "50": 2764932111,
+        "100": 2202053858,
+        "150": 258437663,
+        "200": 1255335648,
+        "250": 1763963881,
+        "300": 3217294629,
+        "350": 2490835991,
+        "400": 641776694,
+        "450": 718641843,
+        "500": 2740535420
+      },
+      "generation_chunk": 2048,
+      "rng": "SeedSequence([split_seed,T]) for grid; independent length/noise child streams for random T",
+      "path": "/Users/joganghyeon/URT_wNN/results/lstm_multilength_grid50_equalN_safeadam_20261020/datasets/calibration_20261020_054651_530361"
+    }
+  },
+  "runs": [],
+  "smoke": false,
+  "error": null,
+  "search_plan": {
+    "stage": "coarse",
+    "pending": [
+      0.2
+    ],
+    "detail": null
+  },
+  "progress": {
+    "w2": 0.2,
+    "stage": "coarse",
+    "epoch": 1,
+    "path": "results/lstm_multilength_grid50_equalN_safeadam_20261020/runs/w2_0.2_20261020_054651_901210",
+    "checkpoint": {
+      "checkpoint": "results/lstm_multilength_grid50_equalN_safeadam_20261020/runs/w2_0.2_20261020_054651_901210/epoch_001.pt",
+      "sha256": "1f9db80018106fce4f4b5a4a658090b90ee2c9b026052fe3a7dd81c775052d92",
+      "epoch": 1
+    }
+  },
+  "gate": {
+    "w2": 0.2,
+    "epoch": 1,
+    "checkpoint": {
+      "checkpoint": "results/lstm_multilength_grid50_equalN_safeadam_20261020/runs/w2_0.2_20261020_054651_901210/epoch_001.pt",
+      "sha256": "1f9db80018106fce4f4b5a4a658090b90ee2c9b026052fe3a7dd81c775052d92",
+      "epoch": 1
+    },
+    "metrics": {
+      "epoch": 1,
+      "train_loss": 0.2706603060269356,
+      "train_acc": 0.5161033333333334,
+      "train_seconds": 98.2989186248742,
+      "batch_count": 2350,
+      "expected_n": 600000,
+      "processed_n": 600000,
+      "unique_n": 600000,
+      "missing_n": 0,
+      "duplicate_n": 0,
+      "epoch_max_gradient": 12382812.0,
+      "epoch_max_exp_avg_sq": 153334022144.0,
+      "final_batch_gradient_max": 0.01090572215616703,
+      "final_exp_avg_sq_max": 46947979264.0
+    },
+    "wandb": {
+      "wandb_id": "396b0l2m",
+      "wandb_url": "https://wandb.ai/rdces-chung-ang-university/URT_wNN/runs/396b0l2m"
+    },
+    "reason": "First epoch gate; no further training/calibration/test authorized"
+  }
+}

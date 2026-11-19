@@ -87,6 +87,25 @@ class RangeExtensionTests(unittest.TestCase):
                     self.assertEqual(plan['interval'],[.95,1.])
                     self.assertLessEqual(max(plan['w2_values']),1.)
             self.assertEqual(json.dumps(old,sort_keys=True),original)
+            if crossing == .675:
+                recovered = state['runs'][:71]
+                reused_keys = {ext.key(r) for r in recovered}
+                resume_base = base/'resume_attempt'
+                resume_base.mkdir()
+                resumed = dict(runs=list(recovered),datasets={},resume_id='resume_test',resume_reused_runs=71)
+                calls.clear()
+                with patch.object(ext,'dataset',side_effect=lambda c,t:(raw[t],t+100)), \
+                     patch.object(ext,'fingerprint',side_effect=lambda x:next(str(t) for t,v in raw.items() if v is x)), \
+                     patch.object(ext,'train',side_effect=fake_train), \
+                     patch.object(ext,'save_plots'):
+                    ext.execute(c,resume_base,resumed,dict(runs=old,datasets=datasets),frozen)
+                self.assertEqual(len(calls),25)
+                self.assertFalse(set(calls) & reused_keys)
+                self.assertEqual(resumed['status'],'complete')
+                self.assertEqual(resumed['new_fine_fits'],42)
+                self.assertEqual(resumed['resume_new_runs_completed'],25)
+                self.assertEqual(len(resumed['runs']),96)
+                self.assertTrue((base/'run_manifest.json').exists())
 
     def test_all_coarse_before_fine_and_endpoint_reuse(self):
         self.run_schedule(.675,42,plot=True)

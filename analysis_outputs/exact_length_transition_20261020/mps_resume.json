@@ -1,0 +1,1 @@
+{"status": "passed", "checkpoint": "results/lstm_multilength_grid50_equalN_smoke_20261019_192108_683351/runs/w2_0.6_20261019_192109_060591/epoch_003.pt", "restored_epoch": 3, "next_update_finite": true}

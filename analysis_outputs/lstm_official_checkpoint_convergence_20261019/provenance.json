@@ -1,0 +1,79 @@
+{
+  "manifest": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/official_independent_test_vs_ann_20261018/test_manifest.json",
+  "runs": [
+    {
+      "T": 50,
+      "w2": 0.55625,
+      "seed": 7,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-7/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-7/history.json",
+      "history_sha256": "3360d53fcd79e31a7ac8b45672615a4cd7372bd042ae77549d15c2676124b4b6"
+    },
+    {
+      "T": 50,
+      "w2": 0.55625,
+      "seed": 17,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-17/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-17/history.json",
+      "history_sha256": "cec94e3d6bd350b2c4b102bd04547463e85ed8ba73d0922d097da4126f9b8ef9"
+    },
+    {
+      "T": 50,
+      "w2": 0.55625,
+      "seed": 27,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-27/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_T50_w2-0.55625_ms-27/history.json",
+      "history_sha256": "3122b48906989ded2318587d2390fe81562f707b54464810be7e0a799c2c00b3"
+    },
+    {
+      "T": 100,
+      "w2": 0.425,
+      "seed": 7,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-7/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-7/history.json",
+      "history_sha256": "09b049189acf1b788dfb9d938c17eed31974152f12f0d2a564ef629a48890efe"
+    },
+    {
+      "T": 100,
+      "w2": 0.425,
+      "seed": 17,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-17/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-17/history.json",
+      "history_sha256": "2c30b71eadb5ee1699af9bd8d95eff957aa551f95ba4b826b16ab41356c2c343"
+    },
+    {
+      "T": 100,
+      "w2": 0.425,
+      "seed": 27,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-27/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration/lstm_paper2019_extension_w2_calibration_fine_T100_w2-0.425_ms-27/history.json",
+      "history_sha256": "165cf9a7403ff0179b133e3d1666ddb058a92daa5fd61fdf5a6a8aab76a6fd3c"
+    },
+    {
+      "T": 250,
+      "w2": 0.74375,
+      "seed": 7,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-7/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-7/history.json",
+      "history_sha256": "90642fc56b0e70df95662214daf0ec687f2c41065ea51ac78a4e7612d3d1056a"
+    },
+    {
+      "T": 250,
+      "w2": 0.74375,
+      "seed": 17,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-17/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-17/history.json",
+      "history_sha256": "cf01f71bdca872f4a4b988e5d9d3a9bd4bbdbc1818f11ebe486c6108a7fd5c60"
+    },
+    {
+      "T": 250,
+      "w2": 0.74375,
+      "seed": 27,
+      "checkpoint": "results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-27/epoch_200.pt",
+      "history": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-27/history.json",
+      "history_sha256": "5e973b1ea312b1009e381e05ca84c77a0e00fca89ac57ed4d8140074b129c4dc"
+    }
+  ],
+  "training_performed": false,
+  "evaluation_performed": false
+}

@@ -1,0 +1,14 @@
+{
+  "pre_clip_global_norm": 5.026894368695029e+28,
+  "clip_coefficient": 1.9005596664715639e-25,
+  "clipped": true,
+  "post_clip_global_norm": 9553.912724148237,
+  "standard_clip_norm": "inf",
+  "standard_clip_norm_finite": false,
+  "gradients_finite": true,
+  "parameters_finite": true,
+  "second_moment_finite": true,
+  "optimizer_finite": true,
+  "elapsed_seconds": 49.76888520875946,
+  "status": "passed"
+}
