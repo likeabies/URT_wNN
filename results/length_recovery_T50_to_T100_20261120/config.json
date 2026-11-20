@@ -1,0 +1,113 @@
+{
+  "base": "/Users/joganghyeon/URT_wNN/results/length_recovery_T250_20261118",
+  "teacher_checkpoint": "/Users/joganghyeon/URT_wNN/results/lstm_paper2019_extension/w2_calibration_range_extension/resume_20261014_215318_786719/lstm_paper2019_extension_w2_calibration_range_extension_extension_fine_resume_20261014_215318_786719_T250_w2-0.74375_ms-7/epoch_200.pt",
+  "teacher_sha256": "627d8003689547b4ce602cd0677ce6d9089db7b6bb95ed831133d07d61cb1a54",
+  "data": {
+    "family": "ann_paper2019_reproduction",
+    "T_values": [
+      50,
+      100,
+      250
+    ],
+    "model_seeds": [
+      7,
+      17,
+      27
+    ],
+    "data_seed": 20191007,
+    "test_seed": 20261008,
+    "rhos": [
+      1,
+      0.99,
+      0.95,
+      0.9,
+      0.5,
+      0.2
+    ],
+    "betas": [
+      0.99,
+      0.95,
+      0.9,
+      0.8,
+      0.7,
+      0.6,
+      0.5,
+      0.4,
+      0.3,
+      0.2,
+      0.1,
+      0.0
+    ],
+    "w2_values": [
+      0.1,
+      0.2,
+      0.35,
+      0.5,
+      0.75,
+      1.0,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "checkpoints": [
+      50,
+      100,
+      150,
+      200,
+      300
+    ],
+    "epoch_candidates": [
+      150,
+      200
+    ],
+    "stability_relative_loss": 0.02,
+    "stability_absolute_rate": 0.01,
+    "sensitivity_relative_loss": 0.05,
+    "sensitivity_absolute_rate": 0.03,
+    "polynomial_relative_root_difference": 0.05,
+    "polynomial_absolute_root_difference": 0.01,
+    "lr": 0.001,
+    "batch_size": 256,
+    "estimated_train_seconds_per_epoch": {
+      "50": 2.354589,
+      "100": 2.42474,
+      "250": 2.488411
+    },
+    "runtime_budget_hours": 16
+  },
+  "data_provenance": {
+    "train_fingerprint": "0eed45981b8b6b84341d86f75244aad23eb541ec78c2c45dbdad66e617cc6758",
+    "test_fingerprint": "b063c8d6df421a0b5aa9f7dbd9ae9c96fd8000c33c2334f6ee0d0d601be24400",
+    "train_derived_seed": 2928367625,
+    "test_derived_seed": 3140695840,
+    "train_n": 120000,
+    "test_n": 84000,
+    "test_rhos": [
+      0.2,
+      0.5,
+      0.8,
+      0.9,
+      0.95,
+      0.99,
+      1.0
+    ]
+  },
+  "seed": 7,
+  "epochs": 200,
+  "batch_size": 256,
+  "lr": 0.001,
+  "source_length": 50,
+  "target_length": 100,
+  "teacher_training_length": 250,
+  "paired_data": "same original full250 trajectories; use first100 without changing RNG or permutation",
+  "training": "original Completion and original.train; raw suffix MSE; teacher forcing 1.0; Adam",
+  "preprocessing": "raw prefix+autoregressive suffix; normalize_ann_series on concatenated100",
+  "calibration": "original training rho=1; lower_null_threshold of softmax unit-root probability; reject <=",
+  "alpha": 0.05,
+  "test_used_for_threshold": false,
+  "teacher_frozen": true,
+  "comparison_sources": [
+    "/Users/joganghyeon/URT_wNN/results/direct_short_T250_teacher_20261120",
+    "/Users/joganghyeon/URT_wNN/results/length_recovery_threshold_20261120_172616"
+  ]
+}

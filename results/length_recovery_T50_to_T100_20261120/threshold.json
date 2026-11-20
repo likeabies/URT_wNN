@@ -1,0 +1,7 @@
+{
+  "threshold": 0.0328713382990184,
+  "n": 60000,
+  "alpha": 0.05,
+  "achieved": 0.05,
+  "rule": "sorted[round(alpha*n)-1]; reject score <= threshold; no tie randomization"
+}

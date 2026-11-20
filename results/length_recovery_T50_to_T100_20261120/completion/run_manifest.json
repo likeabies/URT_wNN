@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "completed_epoch": 200,
+  "kind": "forecast",
+  "started_at": "2026-11-20T10:17:59.650798+00:00",
+  "checkpoint": "results/length_recovery_T50_to_T100_20261120/completion/epoch_200.pt",
+  "finished_at": "2026-11-20T10:41:06.380044+00:00"
+}
